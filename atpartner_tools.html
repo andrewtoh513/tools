@@ -1,0 +1,1896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Client Tools — Andrew Toh & Partners</title>
+<meta name="description" content="Free IP self-check, confidential IP readiness review, Founder's Forest progress tracker, and Andrew's AI legal assistant — all in one place. atpartner.co"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+<style>
+  :root{
+    /* Navy / white / light-grey · modern palette */
+    --navy-deep:#0a2540; --navy:#143a66; --navy-mid:#1e4d8c; --navy-soft:#3a6fb5;
+    --blue:#2563eb; --blue-soft:#60a5fa; --blue-faint:#dbeafe;
+    --bg:#f5f7fa; --panel:#ffffff; --panel-2:#fbfcfe;
+    --line:#e2e8f0; --line-soft:#eef2f7;
+    --text:#0a2540; --text-2:#1a365d; --muted:#64748b; --muted-2:#94a3b8;
+    --grey-light:#f1f5f9; --grey-mid:#cbd5e1;
+    --danger:#dc2626; --danger-soft:#fecaca; --amber:#d97706; --amber-soft:#fde68a;
+    --success:#059669; --success-soft:#a7f3d0;
+    /* Legacy aliases (mapped to navy) so existing references resolve */
+    --green-deep:#143a66; --green:#1e4d8c; --green-mid:#3a6fb5; --green-soft:#60a5fa;
+    --leaf:#2563eb; --gold:#0a2540; --gold-soft:#1e4d8c;
+    --shadow:0 2px 8px rgba(15,37,77,.06), 0 1px 3px rgba(15,37,77,.04);
+    --shadow-lg:0 10px 30px rgba(15,37,77,.10), 0 4px 8px rgba(15,37,77,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55}
+  body{min-height:100vh;background:radial-gradient(1400px 700px at 80% -10%, rgba(37,99,235,.06), transparent),radial-gradient(1100px 600px at -10% 110%, rgba(10,37,64,.04), transparent),linear-gradient(180deg,#f5f7fa 0%,#eef2f7 100%);overflow-x:hidden}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{color:var(--navy-mid)}
+  button{font:inherit;cursor:pointer;color:inherit}
+
+  /* ===== Top bar ===== */
+  header.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--line);backdrop-filter:blur(8px);background:rgba(255,255,255,.85);position:sticky;top:0;z-index:40;gap:18px;flex-wrap:wrap}
+  header.bar .brand{display:flex;align-items:center;gap:10px}
+  header.bar .leaf{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0a2540,#1e4d8c);box-shadow:0 2px 6px rgba(15,37,77,.15);display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;font-family:Georgia,serif}
+  header.bar .leaf::before{content:"AT"}
+  header.bar .name{font-family:Georgia,"Times New Roman",serif;font-size:15px;letter-spacing:.3px;color:var(--navy-deep)}
+  header.bar .name small{display:block;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .nav-tabs{display:flex;gap:4px;background:var(--grey-light);border:1px solid var(--line);border-radius:12px;padding:4px;flex-wrap:wrap}
+  .nav-tabs a{padding:8px 14px;border-radius:9px;font-size:13px;color:var(--muted);transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+  .nav-tabs a:hover{color:var(--navy-deep);background:rgba(10,37,64,.04)}
+  .nav-tabs a.active{background:var(--navy-deep);border:1px solid var(--navy-deep);color:#ffffff;box-shadow:0 1px 3px rgba(10,37,64,.2)}
+  .nav-tabs a .ic{font-size:14px}
+  .top-cta{display:flex;gap:8px;align-items:center}
+  @media (max-width:900px){
+    .nav-tabs{order:3;width:100%;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+    .nav-tabs a{white-space:nowrap}
+  }
+
+  /* ===== Common buttons ===== */
+  .btn{background:#fff;color:var(--navy-deep);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:13.5px;transition:all .15s;display:inline-flex;align-items:center;gap:7px;font-weight:500;box-shadow:0 1px 2px rgba(15,37,77,.04)}
+  .btn:hover{background:var(--grey-light);border-color:var(--navy-soft)}
+  .btn.gold{background:var(--navy-deep);color:#ffffff;border-color:var(--navy-deep);font-weight:600;box-shadow:0 2px 4px rgba(10,37,64,.18)}
+  .btn.gold:hover{background:var(--navy);border-color:var(--navy)}
+  .btn.ghost{background:transparent;border-color:var(--line);color:var(--muted)}
+  .btn.ghost:hover{color:var(--navy-deep);border-color:var(--navy-soft);background:rgba(10,37,64,.03)}
+  .btn.lg{padding:13px 22px;font-size:14px}
+  .btn.danger{background:#fff;border-color:var(--danger-soft);color:var(--danger)}
+  .btn.danger:hover{background:#fef2f2}
+  .pill{display:inline-block;background:var(--blue-faint);border:1px solid var(--blue-soft);color:var(--navy-mid);padding:5px 11px;border-radius:99px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:600}
+  .pill.green{background:var(--success-soft);border-color:var(--success);color:var(--success)}
+  .pill.red{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+  .pill.amber{background:var(--amber-soft);border-color:var(--amber);color:var(--amber)}
+
+  /* ===== Layout ===== */
+  main{max-width:1280px;margin:0 auto;padding:36px 26px 100px}
+  .section-title{font-family:Georgia,serif;font-size:30px;margin:0 0 8px;letter-spacing:.4px}
+  .section-sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+  .hairline{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:6px 0 22px;opacity:.35}
+  .card{background:#ffffff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:16px}
+  .grid.c2{grid-template-columns:1fr 1fr}
+  .grid.c3{grid-template-columns:repeat(3,1fr)}
+  .grid.c4{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:1000px){.grid.c4{grid-template-columns:1fr 1fr}.grid.c3{grid-template-columns:1fr 1fr}}
+  @media (max-width:640px){.grid.c4,.grid.c3,.grid.c2{grid-template-columns:1fr}}
+  .view{display:none;animation:fade .35s ease}
+  .view.show{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ===== Home ===== */
+  .hero{display:grid;grid-template-columns:1.3fr 1fr;gap:36px;align-items:center;margin-bottom:46px}
+  @media (max-width:900px){.hero{grid-template-columns:1fr}}
+  .hero h1{font-family:Georgia,serif;font-size:48px;margin:14px 0 12px;line-height:1.08;letter-spacing:.4px;color:var(--navy-deep)}
+  .hero h1 em{font-style:italic;color:var(--blue);font-weight:600}
+  .hero p.lead{font-size:16px;color:var(--muted);margin:0 0 22px}
+  .hero-art{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 60%,var(--navy-mid) 100%);border:1px solid var(--navy);border-radius:18px;padding:28px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg);color:#fff}
+  .hero-art::after{content:"";position:absolute;inset:auto -40px -40px auto;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.25),transparent 70%)}
+  .hero-art .pill{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#dbeafe}
+  .hero-art .pill.green{background:rgba(167,243,208,.15);border-color:rgba(167,243,208,.3);color:#a7f3d0}
+  .hero-art h3{margin:8px 0 14px;font-family:Georgia,serif;font-size:18px;color:#dbeafe}
+  .hero-art ul{margin:0;padding:0;list-style:none}
+  .hero-art li{padding:7px 0;color:#e2e8f0;font-size:13px;display:flex;gap:8px;align-items:flex-start;border-bottom:1px dashed rgba(255,255,255,.1)}
+  .hero-art li:last-child{border:0}
+  .hero-art li::before{content:"◆";color:var(--blue-soft)}
+  .tool-card{padding:22px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;height:100%;background:#fff}
+  .tool-card:hover{transform:translateY(-3px);border-color:var(--navy-soft);box-shadow:var(--shadow-lg)}
+  .tool-card .ico{font-size:32px;margin-bottom:8px}
+  .tool-card h3{font-family:Georgia,serif;margin:6px 0 6px;font-size:18px;color:var(--navy-deep)}
+  .tool-card p{margin:0 0 12px;font-size:13px;color:var(--muted);flex:1}
+  .tool-card .meta{font-size:11px;color:var(--navy-mid);text-transform:uppercase;letter-spacing:.6px;border-top:1px solid var(--line);padding-top:10px;margin-top:auto;font-weight:600}
+
+  /* Disclaimer strip */
+  .disclaim{font-size:11.5px;color:var(--muted);text-align:center;padding:8px 14px;background:var(--blue-faint);border-bottom:1px solid var(--line)}
+  .disclaim b{color:var(--navy-deep)}
+
+  /* ===== Floating chat widget ===== */
+  .chat-fab{position:fixed;right:22px;bottom:22px;z-index:80;background:var(--navy-deep);color:#ffffff;border:1px solid var(--navy);border-radius:99px;padding:14px 20px;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(10,37,64,.25);display:inline-flex;align-items:center;gap:10px;transition:all .2s}
+  .chat-fab:hover{transform:translateY(-2px);background:var(--navy);box-shadow:0 12px 28px rgba(10,37,64,.32)}
+  .chat-fab .av-dot{width:28px;height:28px;border-radius:50%;background:#ffffff;display:grid;place-items:center;font-size:14px;color:var(--navy-deep);position:relative}
+  .chat-fab .av-dot::after{content:"";position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:var(--success);border:2px solid var(--navy-deep)}
+  .chat-fab.hidden{display:none}
+
+  .chat-overlay{position:fixed;inset:0;background:rgba(10,37,64,.35);backdrop-filter:blur(2px);z-index:70;display:none;align-items:flex-end;justify-content:flex-end;padding:14px;animation:fade .2s ease}
+  .chat-overlay.on{display:flex}
+  .chat-panel{width:420px;max-width:100%;height:min(680px,90vh);background:#ffffff;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px rgba(10,37,64,.25);display:flex;flex-direction:column;overflow:hidden}
+  @media (max-width:520px){.chat-panel{width:100%;height:100vh;max-height:100vh;border-radius:0}}
+  .cp-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--navy-deep);color:#fff}
+  .cp-head .avatar{width:38px;height:38px;border-radius:50%;background:#ffffff;box-shadow:0 0 0 2px rgba(255,255,255,.18);display:grid;place-items:center;font-size:18px;position:relative;color:var(--navy-deep)}
+  .cp-head .avatar::after{content:"";position:absolute;right:0;bottom:0;width:10px;height:10px;border-radius:50%;background:var(--success);border:2px solid var(--navy-deep)}
+  .cp-head .title{font-family:Georgia,serif;font-size:15px;letter-spacing:.3px;color:#fff}
+  .cp-head .sub{font-size:11px;color:#cbd5e1;margin-top:1px}
+  .cp-head .x{margin-left:auto;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#dbeafe;width:32px;height:32px;border-radius:8px}
+  .cp-head .x:hover{background:rgba(255,255,255,.16);color:#fff}
+  .cp-disclaim{font-size:10.5px;color:var(--muted);padding:8px 18px;background:var(--blue-faint);border-bottom:1px solid var(--line)}
+  .cp-disclaim b{color:var(--navy-deep)}
+  .cp-stream{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;background:var(--grey-light)}
+  .cp-composer{border-top:1px solid var(--line);padding:10px 12px;background:#ffffff}
+  .cp-composer .row{display:flex;gap:8px;align-items:flex-end}
+  .cp-composer textarea{flex:1;background:var(--grey-light);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:13.5px;resize:none;min-height:42px;max-height:120px;outline:none;line-height:1.5}
+  .cp-composer textarea:focus{border-color:var(--navy-soft);background:#fff}
+  .cp-composer .send{background:var(--navy-deep);color:#ffffff;border:1px solid var(--navy-deep);border-radius:10px;padding:0 14px;height:42px;font-weight:600;font-size:13px}
+  .cp-composer .send:hover{background:var(--navy)}
+
+  /* Chat bubbles (shared with full chat view) */
+  .msg{display:flex;gap:10px;animation:slideIn .25s ease;max-width:100%}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse}
+  .msg .av-sm{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:13px}
+  .msg.bot .av-sm{background:var(--navy-deep);color:#fff;box-shadow:0 1px 3px rgba(10,37,64,.2)}
+  .msg.user .av-sm{background:var(--blue);color:#fff;font-size:10px;font-weight:600;letter-spacing:.4px}
+  .bubble{padding:11px 14px;border-radius:13px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;max-width:calc(100% - 40px)}
+  .msg.bot .bubble{background:#ffffff;border:1px solid var(--line);border-top-left-radius:4px;color:var(--text);box-shadow:0 1px 2px rgba(15,37,77,.04)}
+  .msg.user .bubble{background:var(--navy-deep);color:#fff;border:1px solid var(--navy);border-top-right-radius:4px}
+  .msg.user .bubble b{color:#dbeafe}
+  .bubble b{color:var(--navy-deep);font-weight:600}
+  .bubble em{color:var(--navy-mid);font-style:normal;background:var(--blue-faint);padding:1px 6px;border-radius:4px;font-weight:500}
+  .bubble .cite{display:block;margin-top:8px;font-size:10.5px;color:var(--muted);font-style:italic;border-top:1px solid var(--line-soft);padding-top:6px}
+  .msg.user .bubble .cite{border-top-color:rgba(255,255,255,.2);color:#cbd5e1}
+  .typing{display:inline-flex;gap:4px;padding:12px 14px;background:#ffffff;border:1px solid var(--line);border-radius:13px;border-top-left-radius:4px}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--navy-soft);animation:bounce 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.15s}
+  .typing span:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+  @keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+  .chip{background:var(--blue-faint);color:var(--navy-mid);border:1px solid var(--blue-soft);padding:5px 10px;border-radius:99px;font-size:11.5px;cursor:pointer;transition:all .15s;font-weight:500}
+  .chip:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .greet-card{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 60%,var(--navy-mid) 100%);border:1px solid var(--navy);border-radius:12px;padding:16px;box-shadow:var(--shadow-lg);color:#fff}
+  .greet-card .pill{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#dbeafe}
+  .greet-card h4{font-family:Georgia,serif;font-size:15px;margin:8px 0 6px;color:#fff}
+  .greet-card p{margin:0 0 10px;font-size:12.5px;color:#e2e8f0}
+  .greet-card .quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .greet-card .quick button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#dbeafe;padding:6px 11px;border-radius:99px;font-size:11.5px;transition:.15s;text-align:left}
+  .greet-card .quick button:hover{background:rgba(255,255,255,.18);color:#fff}
+
+  /* ===== Reusable: progress / quiz ===== */
+  .progress{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+  .progress-bar{flex:1;height:8px;background:var(--grey-light);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .progress-bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--navy-deep));transition:width .4s ease}
+  .progress-text{font-size:12px;color:var(--muted);min-width:130px;text-align:right}
+  .quiz-wrap{background:#ffffff;border:1px solid var(--line);border-radius:18px;padding:28px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+  .quiz-wrap::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+  .section-tag{display:inline-block;font-size:10.5px;letter-spacing:1.5px;color:var(--navy-mid);text-transform:uppercase;background:var(--blue-faint);padding:4px 11px;border-radius:99px;border:1px solid var(--blue-soft);margin-bottom:12px;font-weight:600}
+  .q .qnum{font-size:12px;color:var(--blue);letter-spacing:.5px;font-weight:600}
+  .q h2{font-family:Georgia,serif;font-size:26px;margin:8px 0 12px;line-height:1.2;color:var(--navy-deep)}
+  .q .why{color:var(--muted);font-size:13.5px;margin-bottom:16px;border-left:3px solid var(--blue);padding:5px 0 5px 14px;background:var(--blue-faint);border-radius:0 8px 8px 0;padding:10px 14px}
+  .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0 4px}
+  .opts.two{grid-template-columns:1fr 1fr}
+  @media (max-width:700px){.opts,.opts.two{grid-template-columns:1fr}}
+  .opt{background:#ffffff;border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;text-align:left;color:var(--text);font-size:13px;display:flex;align-items:center;gap:9px;transition:all .15s;width:100%}
+  .opt:hover{border-color:var(--navy-soft);background:var(--grey-light)}
+  .opt.sel{border-color:var(--navy-deep);background:var(--blue-faint);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .opt .ico{font-size:17px;width:22px;text-align:center}
+  .opt small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+  .qfoot{display:flex;justify-content:space-between;align-items:center;margin-top:20px;flex-wrap:wrap;gap:10px}
+  .qfoot .meta{font-size:11.5px;color:var(--muted)}
+  .qfoot .meta b{color:var(--navy-deep)}
+  .hidden{display:none!important}
+
+  /* Result components */
+  .ring-wrap{position:relative;width:240px;height:240px;margin:0 auto}
+  .ring-svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring-bg{stroke:var(--grey-light);stroke-width:14;fill:none}
+  .ring-fg{stroke:url(#grad);stroke-width:14;fill:none;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.18,.9,.4,1)}
+  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-center .label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .ring-center .pct{font-family:Georgia,serif;font-size:60px;color:var(--navy-deep);font-weight:600;line-height:1}
+  .ring-center .pts{font-size:13px;color:var(--muted)}
+
+  /* Footer */
+  footer{padding:32px 28px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:60px;line-height:1.7;background:#fff}
+  footer a{color:var(--blue)}
+
+  /* ===== Lead capture form (post-result) ===== */
+  .lead-capture{background:linear-gradient(135deg,#0a2540 0%,#143a66 60%,#1e4d8c 100%);border:1px solid #143a66;border-radius:14px;padding:26px;margin-top:18px;color:#fff;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
+  .lead-capture::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#60a5fa,transparent)}
+  .lead-capture h3{font-family:Georgia,serif;font-size:22px;margin:6px 0 4px;color:#fff;letter-spacing:.3px}
+  .lead-capture p.sub{color:#cbd5e1;font-size:13.5px;margin:0 0 16px}
+  .lead-capture .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:600px){.lead-capture .lc-grid{grid-template-columns:1fr}}
+  .lead-capture label{display:block;font-size:11px;color:#dbeafe;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;font-weight:600}
+  .lead-capture input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:11px 12px;font-size:13.5px;outline:none;font-family:inherit}
+  .lead-capture input::placeholder{color:#94a3b8}
+  .lead-capture input:focus{background:rgba(255,255,255,.14);border-color:#60a5fa}
+  .lead-capture .lc-actions{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .lead-capture .lc-submit{background:#ffffff;color:#0a2540;border:1px solid #ffffff;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;cursor:pointer;transition:all .15s}
+  .lead-capture .lc-submit:hover{filter:brightness(.95);transform:translateY(-1px)}
+  .lead-capture .lc-submit:disabled{opacity:.6;cursor:wait}
+  .lead-capture .lc-skip{background:transparent;border:1px solid rgba(255,255,255,.25);color:#dbeafe;border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer}
+  .lead-capture .lc-skip:hover{background:rgba(255,255,255,.08)}
+  .lead-capture .lc-consent{font-size:11px;color:#94a3b8;margin-top:10px;line-height:1.5}
+  .lead-capture .lc-consent a{color:#dbeafe}
+  .lead-capture .lc-success{background:rgba(167,243,208,.12);border:1px solid rgba(167,243,208,.4);border-radius:10px;padding:14px;color:#a7f3d0;font-size:13.5px;display:none}
+  .lead-capture.done .lc-form{display:none}
+  .lead-capture.done .lc-success{display:block}
+  .lc-spinner{display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:#0a2540;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ===== PDF capture mode — forces print-friendly white look ===== */
+  .pdf-mode{background:#ffffff!important;color:#0a2540!important;padding:18px!important}
+  .pdf-mode .card{box-shadow:none!important;background:#ffffff!important;color:#0a2540!important;border:1px solid #cbd5e1!important}
+  .pdf-mode .card *{color:#0a2540!important}
+  .pdf-mode .card .pill{background:#dbeafe!important;color:#0a2540!important;border-color:#60a5fa!important}
+  .pdf-mode .card .pill.green{background:#a7f3d0!important;color:#065f46!important;border-color:#059669!important}
+  .pdf-mode .card .pill.red{background:#fecaca!important;color:#991b1b!important;border-color:#dc2626!important}
+  .pdf-mode .card .pill.amber{background:#fde68a!important;color:#92400e!important;border-color:#d97706!important}
+  .pdf-mode .card[style*="gradient"]{background:#f8fafc!important;border:2px solid #0a2540!important}
+  .pdf-mode .card[style*="gradient"] *{color:#0a2540!important}
+  .pdf-mode .ring-bg{stroke:#e2e8f0!important}
+  .pdf-mode .lead-capture, .pdf-mode .no-print, .pdf-mode .chat-fab{display:none!important}
+  .pdf-mode .hairline{background:#cbd5e1!important;opacity:1!important}
+
+  /* Print */
+  @media print{
+    header.bar,.chat-fab,.chat-overlay,.disclaim,footer,.no-print,.lead-capture{display:none!important}
+    body,main{background:#ffffff!important;color:#0a2540!important}
+    .card,.quiz-wrap{background:#ffffff!important;color:#0a2540!important;border:1px solid #cbd5e1!important;box-shadow:none!important;page-break-inside:avoid}
+    .card *{color:#0a2540!important}
+    .card[style*="gradient"]{background:#f8fafc!important;border:2px solid #0a2540!important}
+    .card[style*="gradient"] *{color:#0a2540!important}
+    h1,h2,h3,h4{color:#0a2540!important;page-break-after:avoid}
+    .pill{background:#dbeafe!important;color:#0a2540!important;border-color:#60a5fa!important}
+    .pill.green{background:#a7f3d0!important;color:#065f46!important;border-color:#059669!important}
+    .pill.red{background:#fecaca!important;color:#991b1b!important;border-color:#dc2626!important}
+    .ring-bg{stroke:#e2e8f0!important}
+    .section-title{page-break-after:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand">
+    <div class="leaf"></div>
+    <div class="name">Andrew Toh &amp; Partners <small>IP &amp; Corporate Legal Advisory · Malaysia</small></div>
+  </div>
+  <nav class="nav-tabs" id="navTabs">
+    <a href="#home" data-view="home"><span class="ic">🏠</span> Home</a>
+    <a href="#check" data-view="check"><span class="ic">🛡️</span> Free IP Check</a>
+    <a href="#review" data-view="review"><span class="ic">📊</span> Readiness Review</a>
+    <a href="#forest" data-view="forest"><span class="ic">🌲</span> Forest Tracker</a>
+    <a href="#chat" data-view="chat"><span class="ic">💬</span> Ask Andrew</a>
+  </nav>
+  <div class="top-cta">
+    <a class="btn gold" href="mailto:andrew@atpartner.co?subject=Book%20a%20call">📅 Book a call</a>
+  </div>
+</header>
+
+<div class="disclaim">
+  These tools provide general guidance and are <b>not legal advice</b> on your specific matter. For your situation, book a free 30-minute call: <a href="mailto:andrew@atpartner.co">andrew@atpartner.co</a> · WhatsApp +60-13-4133139.
+</div>
+
+<main>
+
+<!-- ============================ HOME ============================ -->
+<section class="view show" id="view-home">
+  <div class="hero">
+    <div>
+      <span class="pill">CLIENT TOOLS · atpartner.co</span>
+      <h1>Your IP, your corporate structure, your <em>readiness</em>.</h1>
+      <p class="lead">Four free tools, built on the same advisory framework we use in our annual client strategic reviews. Diagnose where you stand, track every milestone, and chat with Andrew's AI assistant — all in one place.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn gold lg" href="#check">🛡️ Take the free IP check</a>
+        <a class="btn ghost lg" href="#chat">💬 Ask Andrew anything</a>
+      </div>
+      <div style="margin-top:18px;font-size:12px;color:var(--muted)">No sign-up. No email gate. Data stays in your browser.</div>
+    </div>
+    <div class="hero-art">
+      <span class="pill green" style="margin-bottom:8px">FOUR TOOLS · ONE FRAMEWORK</span>
+      <h3>The client journey</h3>
+      <ul>
+        <li><b style="color:#fff">Lead</b> — 8-question public IP self-check</li>
+        <li><b style="color:#fff">Engage</b> — chat with Andrew's AI assistant</li>
+        <li><b style="color:#fff">Diagnose</b> — 18-question client readiness review</li>
+        <li><b style="color:#fff">Sustain</b> — Founder's Forest progress tracker</li>
+      </ul>
+      <div style="margin-top:14px;font-size:11px;color:var(--muted)">Built by Andrew Toh — IP &amp; Corporate Legal Advisory, Malaysia.</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Pick a tool to start</h2>
+  <div class="hairline"></div>
+  <div class="grid c4">
+    <a class="card tool-card" href="#check">
+      <div class="ico">🛡️</div>
+      <h3>Free IP Health Check</h3>
+      <p>8 questions, 3 minutes. Find out where you're exposed on trademarks, NDAs and employee IP. Get a score out of 100 and the real RM cost of each gap.</p>
+      <div class="meta">PUBLIC · ANONYMOUS · 3 MIN</div>
+    </a>
+    <a class="card tool-card" href="#review">
+      <div class="ico">📊</div>
+      <h3>IP Readiness Review</h3>
+      <p>18 questions across 8 strategic dimensions. Generates a confidential, printable strategic review with radar chart and prioritised action plan.</p>
+      <div class="meta">CLIENT EDITION · ~7 MIN · PRINTABLE</div>
+    </a>
+    <a class="card tool-card" href="#forest">
+      <div class="ico">🌲</div>
+      <h3>Founder's Forest Tracker</h3>
+      <p>Gamified four-pillar journey: IP, Legal, Corporate Structure and Business Coaching. Five levels, 40 quests, multi-client support — saves locally.</p>
+      <div class="meta">ONGOING · GAMIFIED · MULTI-CLIENT</div>
+    </a>
+    <a class="card tool-card" href="#chat">
+      <div class="ico">💬</div>
+      <h3>Ask Andrew (AI)</h3>
+      <p>Plain-English answers from a curated FAQ — Andrew's voice and framework, 12+ years of advisory experience. Available as a floating widget on every page.</p>
+      <div class="meta">ALWAYS-ON · CURATED FAQ</div>
+    </a>
+  </div>
+
+  <div style="margin-top:36px" class="card">
+    <h2 class="section-title" style="margin-top:0">How these tools fit together</h2>
+    <div class="hairline"></div>
+    <div class="grid c4">
+      <div>
+        <div style="font-size:28px">①</div>
+        <h3 style="font-family:Georgia,serif;margin:4px 0 4px;font-size:16px">Discover</h3>
+        <p style="margin:0;color:var(--muted);font-size:13px">Take the free 8-question IP check. Share your score. Decide if you want a deeper conversation.</p>
+      </div>
+      <div>
+        <div style="font-size:28px">②</div>
+        <h3 style="font-family:Georgia,serif;margin:4px 0 4px;font-size:16px">Explore</h3>
+        <p style="margin:0;color:var(--muted);font-size:13px">Chat with Andrew's AI — get grounded answers on trademarks, patents, NDAs, Sdn Bhd, ESOP, PDPA.</p>
+      </div>
+      <div>
+        <div style="font-size:28px">③</div>
+        <h3 style="font-family:Georgia,serif;margin:4px 0 4px;font-size:16px">Diagnose</h3>
+        <p style="margin:0;color:var(--muted);font-size:13px">Once engaged, run the full 18-question Readiness Review. Generates the strategic report.</p>
+      </div>
+      <div>
+        <div style="font-size:28px">④</div>
+        <h3 style="font-family:Georgia,serif;margin:4px 0 4px;font-size:16px">Sustain</h3>
+        <p style="margin:0;color:var(--muted);font-size:13px">Track ongoing progress in the Forest Tracker — quests, levels, badges, quarterly reviews.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FREE IP CHECK (8Q) ============================ -->
+<section class="view" id="view-check">
+  <span class="pill">FREE IP HEALTH CHECK · PUBLIC</span>
+  <h2 class="section-title" style="margin-top:8px">How protected is your IP, <em style="font-style:italic;color:var(--gold-soft)">really</em>?</h2>
+  <p class="section-sub">8 questions. 3 minutes. One honest score out of 100.</p>
+  <div class="hairline"></div>
+
+  <div class="quiz-wrap" id="checkQuiz">
+    <div class="progress"><div class="progress-bar"><span id="checkProg" style="width:0%"></span></div><div class="progress-text" id="checkStep">8 questions · 3 mins</div></div>
+    <div id="checkIntro">
+      <span class="section-tag">How it scores</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 10px">Two sections, one combined score.</h2>
+      <p style="color:var(--muted);font-size:14px;max-width:720px">
+        <b style="color:var(--text)">Section A — Trademark Protection</b> (5 Qs, 7 raw pts). Q4 (Registration certificate) and Q5 (Correct Nice Class) are <b style="color:var(--gold-soft)">double-weighted</b>.<br/><br/>
+        <b style="color:var(--text)">Section B — Confidentiality &amp; Employee IP</b> (3 Qs, 3 raw pts). Under Malaysian law, employee IP does <b style="color:var(--gold-soft)">not</b> automatically vest in the company.
+      </p>
+      <div style="margin-top:18px"><button class="btn gold lg" id="checkStartBtn">Begin →</button></div>
+    </div>
+    <div id="checkStage" class="hidden"></div>
+    <div class="qfoot" id="checkFoot" style="display:none">
+      <button class="btn ghost" id="checkPrev">← Back</button>
+      <span class="meta" id="checkWeight"></span>
+      <button class="btn gold" id="checkNext">Next →</button>
+    </div>
+  </div>
+
+  <div id="checkResult" class="hidden" style="margin-top:24px"></div>
+</section>
+
+<!-- ============================ READINESS REVIEW (18Q) ============================ -->
+<section class="view" id="view-review">
+  <span class="pill">CONFIDENTIAL · CLIENT EDITION</span>
+  <h2 class="section-title" style="margin-top:8px">Your IP <em style="font-style:italic;color:var(--gold-soft)">Readiness</em> Review.</h2>
+  <p class="section-sub">18 questions across 8 dimensions. ~7 minutes. Generates a printable strategic report.</p>
+  <div class="hairline"></div>
+
+  <div class="card no-print" style="margin-bottom:18px">
+    <div class="grid c4" style="gap:12px">
+      <div><label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Client / Company</label><input id="revName" placeholder="ACME Tech Sdn Bhd" style="width:100%;background:#0f1c10;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px"/></div>
+      <div><label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Review date</label><input id="revDate" type="date" style="width:100%;background:#0f1c10;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px"/></div>
+      <div><label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Lead advisor</label><input id="revAdv" value="Andrew Toh" style="width:100%;background:#0f1c10;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px"/></div>
+      <div><label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Industry / stage</label><input id="revStg" placeholder="SaaS · Series A" style="width:100%;background:#0f1c10;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px"/></div>
+    </div>
+  </div>
+
+  <div class="quiz-wrap" id="reviewQuiz">
+    <div class="progress"><div class="progress-bar"><span id="revProg" style="width:0%"></span></div><div class="progress-text" id="revStep">18 questions · ~7 min</div></div>
+    <div id="revIntro">
+      <span class="section-tag">Eight dimensions</span>
+      <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 10px">Composite Readiness Score + dimension radar.</h2>
+      <p style="color:var(--muted);font-size:14px;max-width:760px">
+        Each dimension maps to a section of our annual IP Strategic Review framework. <b style="color:var(--gold-soft)">Trademark Strategy</b>, <b style="color:var(--gold-soft)">Internal Safeguards</b> and <b style="color:var(--gold-soft)">Worldwide Coverage</b> carry the highest weights — gaps here are what wreck due diligence.
+      </p>
+      <div style="margin-top:18px"><button class="btn gold lg" id="revStartBtn">Begin →</button></div>
+    </div>
+    <div id="revStage" class="hidden"></div>
+    <div class="qfoot" id="revFoot" style="display:none">
+      <button class="btn ghost" id="revPrev">← Back</button>
+      <span class="meta" id="revWeight"></span>
+      <button class="btn gold" id="revNext">Next →</button>
+    </div>
+  </div>
+
+  <div id="revResult" class="hidden" style="margin-top:24px"></div>
+</section>
+
+<!-- ============================ FOREST TRACKER ============================ -->
+<section class="view" id="view-forest">
+  <span class="pill">ONGOING · GAMIFIED</span>
+  <h2 class="section-title" style="margin-top:8px">The Founder's Forest <em style="font-style:italic;color:var(--gold-soft)">Tracker</em>.</h2>
+  <p class="section-sub">Four pillars · Five levels · 40 quests · Multi-client. Data saves locally.</p>
+  <div class="hairline"></div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center" class="no-print">
+    <div style="display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 8px">
+      <span style="font-size:16px">🌱</span>
+      <select id="forestClientSel" style="background:transparent;color:var(--text);border:0;outline:none;font-size:13px;padding:4px 8px;min-width:180px"></select>
+    </div>
+    <button class="btn ghost" id="forestAdd">＋ Add client</button>
+    <button class="btn ghost" id="forestRename">✎ Rename</button>
+    <button class="btn ghost danger" id="forestDel">🗑 Delete</button>
+    <button class="btn ghost" id="forestDemo">🌳 Load ACME demo</button>
+    <button class="btn ghost" id="forestReset">↺ Reset progress</button>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <div class="seg" id="forestNav" style="display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden">
+        <button data-fv="dash" class="active" style="background:var(--green);color:var(--text);border:0;padding:7px 12px;font-size:13px">Dashboard</button>
+        <button data-fv="quests" style="background:transparent;color:var(--muted);border:0;padding:7px 12px;font-size:13px">Quests</button>
+        <button data-fv="badges" style="background:transparent;color:var(--muted);border:0;padding:7px 12px;font-size:13px">Badges</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="forestDashView"></div>
+  <div id="forestQuestsView" class="hidden"></div>
+  <div id="forestBadgesView" class="hidden"></div>
+</section>
+
+<!-- ============================ FULL CHAT ============================ -->
+<section class="view" id="view-chat">
+  <span class="pill">AI ASSISTANT · CURATED BY ANDREW</span>
+  <h2 class="section-title" style="margin-top:8px">Ask Andrew <em style="font-style:italic;color:var(--gold-soft)">anything</em>.</h2>
+  <p class="section-sub">Plain-English answers on Malaysian IP, employment IP, corporate structure and compliance — the way Andrew would explain it on a first call.</p>
+  <div class="hairline"></div>
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:18px;min-height:600px" id="chatGrid">
+    <aside id="chatSidebar" style="background:linear-gradient(180deg,#16261a,#0f1c10);border:1px solid var(--line);border-radius:14px;padding:16px 12px;overflow-y:auto;max-height:680px"></aside>
+    <div class="card" style="padding:0;display:flex;flex-direction:column;min-height:600px">
+      <div style="flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px" id="fullStream"></div>
+      <form id="fullForm" style="border-top:1px solid var(--line);padding:12px 16px;background:rgba(15,28,16,.6)">
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <textarea id="fullInput" rows="1" placeholder="Ask anything — e.g. 'My CTO is leaving, what should I worry about?'" style="flex:1;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:11px;padding:11px 13px;font-family:inherit;font-size:14px;resize:none;min-height:44px;max-height:140px;outline:none;line-height:1.5"></textarea>
+          <button type="submit" class="btn gold" style="height:44px">Send →</button>
+        </div>
+        <div style="margin-top:6px;color:var(--muted);font-size:11px;text-align:center">Enter to send · Shift+Enter for new line</div>
+      </form>
+    </div>
+  </div>
+</section>
+<style>@media (max-width:900px){#chatGrid{grid-template-columns:1fr!important}#chatSidebar{display:none}}</style>
+
+</main>
+
+<footer>
+  © 2026 Andrew Toh &amp; Partners · IP &amp; Corporate Legal Advisory · Malaysia<br/>
+  <a href="mailto:andrew@atpartner.co">andrew@atpartner.co</a> · WhatsApp +60-13-4133139 · <a href="https://atpartner.co">atpartner.co</a><br/>
+  These tools generate guidance based on self-reported answers and do not constitute legal advice or create a solicitor-client relationship.
+</footer>
+
+<!-- Floating chat FAB + overlay -->
+<button class="chat-fab" id="chatFab" aria-label="Ask Andrew">
+  <span class="av-dot">⚖️</span>
+  <span>Ask Andrew</span>
+</button>
+<div class="chat-overlay" id="chatOverlay">
+  <div class="chat-panel">
+    <div class="cp-head">
+      <div class="avatar">⚖️</div>
+      <div>
+        <div class="title">Ask Andrew</div>
+        <div class="sub">AI assistant · curated FAQ</div>
+      </div>
+      <button class="x" id="chatClose" aria-label="Close">✕</button>
+    </div>
+    <div class="cp-disclaim">General guidance only — <b>not legal advice</b>. Book a real call for your specific matter.</div>
+    <div class="cp-stream" id="miniStream"></div>
+    <form class="cp-composer" id="miniForm">
+      <div class="row">
+        <textarea id="miniInput" rows="1" placeholder="Ask about TM, NDA, Sdn Bhd, ESOP, PDPA…"></textarea>
+        <button class="send" type="submit">→</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ====================================================================
+   atpartner.co — Unified Client Tools page
+   Modules: router · check (8Q) · review (18Q) · forest · chat
+==================================================================== */
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+function esc(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])) }
+function escAttr(s){ return String(s).replace(/"/g,"&quot;") }
+
+/* ===================== ROUTER ===================== */
+const VIEWS = ["home","check","review","forest","chat"];
+function routeTo(name){
+  if(!VIEWS.includes(name)) name = "home";
+  VIEWS.forEach(v=>{
+    $("#view-"+v).classList.toggle("show", v===name);
+  });
+  $$("#navTabs a").forEach(a=>a.classList.toggle("active", a.dataset.view===name));
+  window.scrollTo({top:0,behavior:"smooth"});
+  // Hide floating FAB only when full chat view is active
+  $("#chatFab").classList.toggle("hidden", name==="chat");
+  // Trigger module init
+  if(name==="forest") Forest.render();
+  if(name==="chat") Chat.initFull();
+}
+function applyHash(){
+  const h = (location.hash||"#home").replace("#","");
+  routeTo(h);
+}
+window.addEventListener("hashchange", applyHash);
+$$("#navTabs a").forEach(a=>a.addEventListener("click", e=>{
+  // let hash change naturally; handled by hashchange
+}));
+$$(".tool-card").forEach(c=>{
+  // already <a> with href #foo
+});
+applyHash();
+</script>
+<script>
+/* ===================== MODULE: CHECK (8Q free IP self-check) ===================== */
+const Check = (()=>{
+  const QS = [
+    { id:"Q1", section:"A", weight:1, title:"Do you have a trademark designed?", why:"A unique word mark, logo or both. A descriptive name (e.g. \"Malaysian Coffee\") is unregistrable.", tag:"Section A · Trademark Protection",
+      opts:[{v:1,label:"Yes — distinctive logo/wordmark",ico:"✅"},{v:0.5,label:"In progress / draft",ico:"🟡"},{v:0,label:"No, or generic name",ico:"🔴"}] },
+    { id:"Q2", section:"A", weight:1, title:"Have you filed in your country of operation?", why:"Malaysia plus every country where you sell. Trademarks are territorial under the Trade Marks Act 2019.", tag:"Section A",
+      opts:[{v:1,label:"Yes — all operating jurisdictions",ico:"✅"},{v:0.5,label:"Filed in some, missing others",ico:"🟡"},{v:0,label:"Not filed",ico:"🔴"}] },
+    { id:"Q3", section:"A", weight:1, title:"Have you filed in your country of production?", why:"If your goods are manufactured in China/Vietnam/Indonesia, you need protection there too — to stop OEMs from exporting your branded goods to others.", tag:"Section A",
+      opts:[{v:1,label:"Yes — covered in production country",ico:"✅"},{v:0.5,label:"Production is in MY only",ico:"🟢",note:"counts as covered"},{v:0,label:"Manufactured abroad, no filing",ico:"🔴"}] },
+    { id:"Q4", section:"A", weight:2, title:"Have you received the registration certificate?", why:"★ Heavier weight (×2). Only registration grants statutory rights. \"TM Pending\" gives almost nothing legally.", tag:"Section A · DOUBLE-WEIGHTED",
+      opts:[{v:1,label:"Yes — certificate received",ico:"✅"},{v:0.5,label:"Pending / under examination",ico:"🟡"},{v:0,label:"Not filed yet",ico:"🔴"}] },
+    { id:"Q5", section:"A", weight:2, title:"Did you file in the right Nice Class(es)?", why:"★ Heavier weight (×2). Wrong class = no protection in your actual market. Most common mistake we see.", tag:"Section A · DOUBLE-WEIGHTED",
+      opts:[{v:1,label:"Yes — classes verified by IP counsel",ico:"✅"},{v:0.5,label:"Filed but not professionally reviewed",ico:"🟡"},{v:0,label:"No / wrong class",ico:"🔴"}] },
+    { id:"Q6", section:"B", weight:1, title:"Do you give private/confidential content to staff?", why:"Customer lists, source code, pricing models, supplier terms. If yes — they need protection.", tag:"Section B · Confidentiality",
+      opts:[{v:1,label:"Yes — treated as confidential",ico:"✅"},{v:0.5,label:"Yes, no formal policy",ico:"🟡"},{v:0,label:"No / not sure",ico:"🔴"}] },
+    { id:"Q7", section:"B", weight:1, title:"Do staff sign confidentiality clauses?", why:"NDA on Day 1, ideally extending post-termination. Section 27 Contracts Act 1950 — must be carefully drafted.", tag:"Section B",
+      opts:[{v:1,label:"Yes — every employee, well-drafted",ico:"✅"},{v:0.5,label:"Yes, generic template",ico:"🟡"},{v:0,label:"No NDA in contracts",ico:"🔴"}] },
+    { id:"Q8", section:"B", weight:1, title:"Does the contract say employee IP belongs to the company?", why:"★ CRITICAL. Without an express IP assignment clause, employee-created IP may default to the employee under Malaysian law.", tag:"Section B · CRITICAL",
+      opts:[{v:1,label:"Yes — express assignment clause",ico:"✅"},{v:0.5,label:"Mentioned but not clearly assigned",ico:"🟡"},{v:0,label:"No — silent on IP",ico:"🔴"}] },
+  ];
+  const MAX = QS.reduce((s,q)=>s+q.weight,0);
+  const BANDS = [
+    { min:0,max:30,name:"Exposed",key:"EXPOSED",pill:"red",desc:"Critical gaps. You are operating without meaningful IP protection.",todo:"Urgent diagnostic needed — quick wins available within 30 days." },
+    { min:31,max:50,name:"Patchy",key:"PATCHY",pill:"red",desc:"Foundation laid but holes remain. Vulnerable in due diligence.",todo:"Priority work on registration, classes and employee IP." },
+    { min:51,max:70,name:"Solid",key:"SOLID",pill:"amber",desc:"Most boxes ticked. Some refinement needed for scale-up.",todo:"Tune for international expansion and investor-readiness." },
+    { min:71,max:100,name:"Fortified",key:"FORTIFIED",pill:"green",desc:"Strong IP posture. You're investor-ready.",todo:"Maintain & monitor. Annual reviews + portfolio expansion." },
+  ];
+  const GAPMAP = {
+    Q4:{title:"No TM registration",cost:"RM 50K–250K to recover a hijacked TM (per jurisdiction).",detail:"A competitor or distributor may register your mark in SG/ID first."},
+    Q5:{title:"Wrong / missing Nice Class",cost:"Zero protection in your actual market.",detail:"Filing in the wrong class (e.g. 35 instead of 30 for food) is the most common mistake."},
+    Q2:{title:"Not filed in operating country",cost:"No statutory rights where you actually sell.",detail:"Trademarks are territorial — MY rights don't reach SG/ID."},
+    Q3:{title:"Not filed in production country",cost:"OEMs can legally export your branded goods.",detail:"If you manufacture abroad, file there too."},
+    Q1:{title:"No distinctive trademark",cost:"Descriptive names are unregistrable.",detail:"Have a name/logo cleared by IP counsel before launch."},
+    Q7:{title:"No NDA / weak NDA",cost:"RM 200K+ in litigation if you have a leg to stand on.",detail:"Section 27 Contracts Act voids broad restraints."},
+    Q8:{title:"No employee IP assignment",cost:"Investor walks. Buyer demands 10–20% holdback.",detail:"Universal DD question: \"Show me the IP assignment for every developer.\""},
+    Q6:{title:"Trade secrets uncaptured",cost:"You can't enforce protection on what you haven't identified.",detail:"Build a trade-secrets register."},
+  };
+  let answers={}, step=-1;
+
+  function setProg(){
+    $("#checkProg").style.width = (step<0?0:Math.round(step/QS.length*100))+"%";
+    $("#checkStep").textContent = step<0?`${QS.length} questions · 3 mins`:step>=QS.length?"Done":`Question ${step+1} of ${QS.length}`;
+  }
+  function renderQ(){
+    const q = QS[step];
+    const stage = $("#checkStage"); stage.classList.remove("hidden");
+    stage.innerHTML = `<div class="q">
+      <span class="section-tag">${q.tag}</span>
+      <div class="qnum">${q.id}${q.weight>1?` · weight ×${q.weight}`:""}</div>
+      <h2>${q.title}</h2>
+      <div class="why">${q.why}</div>
+      <div class="opts" id="checkOpts">${q.opts.map(o=>`<button class="opt ${answers[q.id]===o.v?"sel":""}" data-v="${o.v}"><span class="ico">${o.ico}</span><div>${o.label}${o.note?`<small>${o.note}</small>`:""}</div></button>`).join("")}</div>
+    </div>`;
+    $("#checkWeight").innerHTML = q.weight>1?`★ Double-weighted (×${q.weight})`:`Weight ×1`;
+    $$("#checkOpts .opt").forEach(b=>b.addEventListener("click",()=>{
+      answers[q.id]=parseFloat(b.dataset.v);
+      $$("#checkOpts .opt").forEach(x=>x.classList.toggle("sel",x===b));
+      setTimeout(next,260);
+    }));
+    $("#checkPrev").style.visibility = step===0?"hidden":"visible";
+    $("#checkNext").textContent = step===QS.length-1?"See my score →":"Next →";
+  }
+  function next(){
+    if(step>=0 && answers[QS[step].id]===undefined){ alert("Pick an answer."); return; }
+    step++;
+    if(step>=QS.length){ showResult(); return; }
+    renderQ(); setProg();
+  }
+  function prev(){
+    if(step<=0){ reset(); return; }
+    step--; renderQ(); setProg();
+  }
+  function reset(){
+    answers={}; step=-1;
+    $("#checkIntro").classList.remove("hidden");
+    $("#checkStage").classList.add("hidden");
+    $("#checkFoot").style.display="none";
+    $("#checkResult").classList.add("hidden");
+    setProg();
+  }
+  function showResult(){
+    $("#checkIntro").classList.add("hidden");
+    $("#checkStage").classList.add("hidden");
+    $("#checkFoot").style.display="none";
+    let raw=0, A=0, B=0;
+    QS.forEach(q=>{ const v=answers[q.id]||0; raw+=v*q.weight; if(q.section==="A") A+=v*q.weight; else B+=v*q.weight; });
+    const pct = Math.round(raw/MAX*100);
+    const band = BANDS.find(b=>pct>=b.min&&pct<=b.max);
+    const gaps = QS.filter(q=>(answers[q.id]||0)<1).sort((a,b)=>b.weight-a.weight)
+      .map(q=>{const g=GAPMAP[q.id];if(!g)return"";return `<div style="padding:12px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 200px;gap:14px"><div><b style="color:var(--danger)">${g.title}</b> <span style="color:var(--muted);font-size:12px">(${q.id}${q.weight>1?", ×"+q.weight:""})</span><div style="color:var(--muted);font-size:13px;margin-top:4px">${g.detail}</div></div><div style="background:var(--blue-faint);border:1px solid var(--blue-soft);border-radius:9px;padding:8px 10px;color:var(--navy-deep);font-size:12.5px"><b style="font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);display:block;font-weight:600">Likely cost</b>${g.cost}</div></div>`;}).join("");
+    $("#checkResult").classList.remove("hidden");
+    $("#checkResult").innerHTML = `
+      <div class="card" style="background:linear-gradient(135deg,#0a2540,#143a66,#1e4d8c);border:1px solid #143a66;padding:32px;color:#fff">
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center" id="checkResHero">
+          <div>
+            <span class="pill ${band.pill}" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);color:#dbeafe">${band.key}</span>
+            <h2 style="font-family:Georgia,serif;font-size:32px;margin:8px 0 6px;color:#fff">${band.name}</h2>
+            <p style="color:#e2e8f0;margin:0 0 8px">${band.desc}</p>
+            <p style="font-size:13px;color:#cbd5e1;margin:0"><b style="color:#dbeafe">Next step:</b> ${band.todo}</p>
+            <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+              <a class="btn gold" href="mailto:andrew@atpartner.co?subject=IP%20Diagnostic">📅 Book free 30-min</a>
+              <button class="btn ghost" id="checkRestart">↺ Retake</button>
+              <a class="btn ghost" href="#review">📊 Deeper 18-Q review →</a>
+            </div>
+          </div>
+          <div><div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 200 200">
+              <defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#0a2540"/></linearGradient></defs>
+              <circle class="ring-bg" cx="100" cy="100" r="86" stroke="rgba(255,255,255,.15)"/>
+              <circle class="ring-fg" id="checkRing" cx="100" cy="100" r="86" stroke="url(#grad)" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="540" stroke-dashoffset="540" style="transition:stroke-dashoffset 1.4s cubic-bezier(.18,.9,.4,1)"/>
+            </svg>
+            <div class="ring-center"><div class="label" style="color:#cbd5e1">IP Health Score</div><div class="pct" id="checkPct" style="color:#fff">0%</div><div class="pts" style="color:#cbd5e1">${raw.toFixed(raw%1?1:0)} / ${MAX} pts</div></div>
+          </div></div>
+        </div>
+      </div>
+      <div class="grid c2" style="margin-top:18px">
+        <div class="card"><h3 style="font-family:Georgia,serif;margin-top:0;color:var(--navy-deep)">Section A — Trademark</h3>
+          <div style="font-size:12px;color:var(--muted)"><b style="color:var(--navy-deep)">${A.toFixed(A%1?1:0)}</b> / 7 pts</div>
+          <div style="height:8px;background:var(--grey-light);border-radius:99px;overflow:hidden;margin:10px 0 10px"><span style="display:block;height:100%;width:${(A/7*100).toFixed(0)}%;background:linear-gradient(90deg,var(--blue),var(--navy-deep))"></span></div>
+          <ul style="margin:0;padding:0;list-style:none">${QS.filter(q=>q.section==="A").map(q=>{const v=answers[q.id]||0;const ok=v>=1,partial=v>0&&v<1;return `<li style="font-size:13px;color:var(--text);padding:5px 0;display:flex;gap:8px"><span style="font-weight:700;color:${ok?"var(--success)":partial?"var(--amber)":"var(--danger)"};width:18px">${ok?"✓":partial?"~":"✗"}</span><span>${q.id} — ${q.title.replace(/\?$/,"")}${q.weight>1?` <span style="color:var(--blue)">(×${q.weight})</span>`:""}</span></li>`;}).join("")}</ul>
+        </div>
+        <div class="card"><h3 style="font-family:Georgia,serif;margin-top:0;color:var(--navy-deep)">Section B — Confidentiality &amp; Employee IP</h3>
+          <div style="font-size:12px;color:var(--muted)"><b style="color:var(--navy-deep)">${B.toFixed(B%1?1:0)}</b> / 3 pts</div>
+          <div style="height:8px;background:var(--grey-light);border-radius:99px;overflow:hidden;margin:10px 0 10px"><span style="display:block;height:100%;width:${(B/3*100).toFixed(0)}%;background:linear-gradient(90deg,var(--blue),var(--navy-deep))"></span></div>
+          <ul style="margin:0;padding:0;list-style:none">${QS.filter(q=>q.section==="B").map(q=>{const v=answers[q.id]||0;const ok=v>=1,partial=v>0&&v<1;return `<li style="font-size:13px;color:var(--text);padding:5px 0;display:flex;gap:8px"><span style="font-weight:700;color:${ok?"var(--success)":partial?"var(--amber)":"var(--danger)"};width:18px">${ok?"✓":partial?"~":"✗"}</span><span>${q.id} — ${q.title.replace(/\?$/,"")}</span></li>`;}).join("")}</ul>
+        </div>
+      </div>
+      ${gaps?`<div class="card" style="margin-top:18px"><h3 style="font-family:Georgia,serif;margin-top:0;color:var(--navy-deep)">The real cost of your gaps</h3><p style="margin:0 0 8px;color:var(--muted);font-size:13px">In Malaysian Ringgit and operational terms.</p>${gaps}</div>`:`<div class="card" style="margin-top:18px;color:var(--success)">🎉 No major gaps detected — your IP posture is fortified.</div>`}
+    `;
+    // animate ring + number
+    const C = 2*Math.PI*86;
+    const r = $("#checkRing"); r.setAttribute("stroke-dasharray",C.toFixed(2));
+    setTimeout(()=>r.setAttribute("stroke-dashoffset",(C*(1-pct/100)).toFixed(2)),80);
+    const el = $("#checkPct"); const t0=performance.now();
+    (function tick(now){const t=Math.min(1,(now-t0)/1100);const e=1-Math.pow(1-t,3);el.textContent=Math.round(pct*e)+"%";if(t<1)requestAnimationFrame(tick);})(performance.now());
+    $("#checkRestart").addEventListener("click",reset);
+    // Mount the lead-capture form below the result
+    LeadCapture.mount({
+      container: $("#checkResult"),
+      resultEl: $("#checkResult"),
+      toolName: "check_8q",
+      toolLabel: "Free IP Check (8Q)",
+      fileBase: "ip-health-check",
+      getPayload: () => ({
+        score: pct,
+        band: band.key,
+        sectionA: A,
+        sectionB: B,
+        rawScore: raw,
+        maxScore: MAX,
+        answers: {...answers},
+        gapList: QS.filter(q=>(answers[q.id]||0)<1).map(q=>q.id),
+      })
+    });
+    $("#checkResult").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function init(){
+    $("#checkStartBtn").addEventListener("click",()=>{ step=0; $("#checkIntro").classList.add("hidden"); $("#checkFoot").style.display="flex"; renderQ(); setProg(); });
+    $("#checkNext").addEventListener("click",next);
+    $("#checkPrev").addEventListener("click",prev);
+  }
+  return {init};
+})();
+Check.init();
+</script>
+<script>
+/* ===================== MODULE: REVIEW (18Q internal readiness) ===================== */
+const Review = (()=>{
+  const DIMS = [
+    {code:"PORT",name:"Portfolio Coverage",icon:"📦",weight:10},
+    {code:"TM",name:"Trademark Strategy",icon:"™️",weight:18},
+    {code:"PAT",name:"Patent & FTO",icon:"🔬",weight:12},
+    {code:"WW",name:"Worldwide Coverage",icon:"🌏",weight:16},
+    {code:"INT",name:"Internal Safeguards",icon:"🛡️",weight:18},
+    {code:"AUD",name:"Audit & Valuation",icon:"🧭",weight:8},
+    {code:"REN",name:"Renewal Management",icon:"🗓️",weight:8},
+    {code:"TX",name:"Transaction Readiness",icon:"💼",weight:10},
+  ];
+  const QS = [
+    {id:"P1",dim:"PORT",weight:1,title:"Documented register of all protectable IP assets?",why:"TMs, patents, copyright, trade secrets, designs — listed by category, status, jurisdiction.",opts:[{v:1,label:"Yes — comprehensive, updated quarterly",ico:"✅"},{v:0.5,label:"Partial — some assets tracked",ico:"🟡"},{v:0,label:"No central register",ico:"🔴"}]},
+    {id:"P2",dim:"PORT",weight:1,title:"Trade-secrets register actively maintained?",why:"Customer lists, source code, formulas, pricing models — identified, marked confidential, annually reviewed.",opts:[{v:1,label:"Yes — annual review",ico:"✅"},{v:0.5,label:"Listed once, not refreshed",ico:"🟡"},{v:0,label:"Not identified",ico:"🔴"}]},
+    {id:"T1",dim:"TM",weight:1,title:"Every active trademark registered in Malaysia (cert received)?",why:"\"TM Pending\" gives almost no statutory protection under Trade Marks Act 2019.",opts:[{v:1,label:"Yes — all registered MY",ico:"✅"},{v:0.5,label:"Some pending",ico:"🟡"},{v:0,label:"None registered",ico:"🔴"}]},
+    {id:"T2",dim:"TM",weight:1.2,title:"Marks filed in correct Nice Class(es) for your products?",why:"★ Highest-impact question. Wrong class = zero protection in your real market.",opts:[{v:1,label:"Yes — verified by IP counsel",ico:"✅"},{v:0.5,label:"Filed, not professionally reviewed",ico:"🟡"},{v:0,label:"Unsure / wrong class",ico:"🔴"}]},
+    {id:"T3",dim:"TM",weight:1,title:"Madrid / direct filings done in your ASEAN operating markets?",why:"Gaps in SG/ID/VN mean a competitor can register your mark first. Recovery: RM 50K-250K per jurisdiction.",opts:[{v:1,label:"Yes — covered in all operating markets",ico:"✅"},{v:0.5,label:"Filed in some markets",ico:"🟡"},{v:0,label:"Malaysia only",ico:"🔴"}]},
+    {id:"R1",dim:"PAT",weight:1,title:"Granted patents protecting core technology?",why:"A granted patent in the right jurisdiction is a defensible moat. Pending applications have priority but no enforceable rights.",opts:[{v:1,label:"Yes — granted patent(s)",ico:"✅"},{v:0.5,label:"Pending applications only",ico:"🟡"},{v:0,label:"No patents / not applicable",ico:"⚪",note:"non-tech: score 1"}]},
+    {id:"R2",dim:"PAT",weight:1,title:"Freedom-to-Operate (FTO) opinion before commercialisation?",why:"FTO confirms you can launch without infringing third-party rights. Skipping it is the most expensive mistake.",opts:[{v:1,label:"Yes — FTO opinion on file",ico:"✅"},{v:0.5,label:"Informal search only",ico:"🟡"},{v:0,label:"No FTO / not applicable",ico:"⚪"}]},
+    {id:"W1",dim:"WW",weight:1.2,title:"IP coverage aligned to your revenue map?",why:"★ Trademarks are territorial. If 30% of revenue is from Indonesia, gaps there = 30% of enterprise value at risk.",opts:[{v:1,label:"Yes — matches revenue map",ico:"✅"},{v:0.5,label:"Partial alignment",ico:"🟡"},{v:0,label:"Misaligned",ico:"🔴"}]},
+    {id:"W2",dim:"WW",weight:1,title:"Protected in your country of production?",why:"If manufactured abroad, you need protection there to stop OEMs exporting your branded goods.",opts:[{v:1,label:"Yes — covered where we manufacture",ico:"✅"},{v:0.5,label:"Manufactured in MY only",ico:"🟢",note:"counts as covered"},{v:0,label:"Manufactured abroad, no filing",ico:"🔴"}]},
+    {id:"I1",dim:"INT",weight:1.2,title:"Every employee signed a Day-1 NDA?",why:"NDA on Day 1, extending post-termination. Section 27 Contracts Act 1950 — must be carefully drafted.",opts:[{v:1,label:"100% — all signed",ico:"✅"},{v:0.5,label:"Most, but template weak",ico:"🟡"},{v:0,label:"No formal NDA process",ico:"🔴"}]},
+    {id:"I2",dim:"INT",weight:1.5,title:"Every employment contract contains express IP assignment?",why:"★★ CRITICAL. Without express assignment, employee IP may default to the employee under Malaysian law.",opts:[{v:1,label:"Yes — every contract",ico:"✅"},{v:0.5,label:"In template, not every contract",ico:"🟡"},{v:0,label:"Silent on IP",ico:"🔴"}]},
+    {id:"I3",dim:"INT",weight:1,title:"All founders / advisors signed IP assignment deeds?",why:"Investors walk if any founder's contribution isn't formally assigned. Cleanup retroactively costs 5-10× original.",opts:[{v:1,label:"Yes — all signed",ico:"✅"},{v:0.5,label:"Most signed, gaps remain",ico:"🟡"},{v:0,label:"Not in place",ico:"🔴"}]},
+    {id:"I4",dim:"INT",weight:1,title:"Standardised investor / board NDA template in use?",why:"Ad-hoc NDAs invite drafting inconsistencies and litigation risk.",opts:[{v:1,label:"Yes — standardised template",ico:"✅"},{v:0.5,label:"Used inconsistently",ico:"🟡"},{v:0,label:"No template / ad-hoc",ico:"🔴"}]},
+    {id:"A1",dim:"AUD",weight:1,title:"Formal IP audit completed in last 12 months?",why:"Catches lapsed renewals, weak claims, mis-classed marks before DD does.",opts:[{v:1,label:"Yes — within 12 months",ico:"✅"},{v:0.5,label:"Done once, more than year ago",ico:"🟡"},{v:0,label:"No formal audit",ico:"🔴"}]},
+    {id:"A2",dim:"AUD",weight:1,title:"Current IP valuation indicator on file?",why:"Even an order-of-magnitude range arms you for investor/M&A conversations.",opts:[{v:1,label:"Yes — current valuation",ico:"✅"},{v:0.5,label:"Estimated informally",ico:"🟡"},{v:0,label:"Never valued",ico:"🔴"}]},
+    {id:"N1",dim:"REN",weight:1,title:"Renewal calendar with 90/60/30/7-day reminders?",why:"Miss a renewal — lose the right forever. Our protocol: 90/60/30/7-day reminders + annual 1 Jan refresh.",opts:[{v:1,label:"Yes — calendar + multi-stage",ico:"✅"},{v:0.5,label:"Tracked, single reminder",ico:"🟡"},{v:0,label:"No formal calendar",ico:"🔴"}]},
+    {id:"X1",dim:"TX",weight:1,title:"Protocol to notify counsel before any IP transaction?",why:"60d before sale/acquisition · 30d before licensing/pledge · immediate on infringement.",opts:[{v:1,label:"Yes — documented protocol",ico:"✅"},{v:0.5,label:"Informal — we usually tell",ico:"🟡"},{v:0,label:"No protocol",ico:"🔴"}]},
+    {id:"X2",dim:"TX",weight:1,title:"IP chain-of-title clean and verifiable?",why:"Chain-of-title gaps are the #1 reason deals get repriced or walked away from.",opts:[{v:1,label:"Yes — clean",ico:"✅"},{v:0.5,label:"Mostly clean, some gaps",ico:"🟡"},{v:0,label:"Unclear",ico:"🔴"}]},
+  ];
+  const BANDS = [
+    {min:0,max:40,name:"Domestic Only",key:"DOMESTIC",pill:"red",desc:"Significant cross-border and structural gaps. IP posture is functional within Malaysia but fragile outside it.",todo:"Priority work on regional TM filings, employee IP assignment, and a formal audit in the next quarter."},
+    {min:41,max:60,name:"Building",key:"BUILDING",pill:"amber",desc:"Foundations laid. Coverage uneven across jurisdictions; some internal safeguards still informal.",todo:"Close ASEAN TM gaps, standardise NDAs, complete founder IP assignment within 90 days."},
+    {min:61,max:80,name:"Regional",key:"REGIONAL",pill:"green",desc:"ASEAN coverage emerging. Strong domestic posture; some strategic refinements remain.",todo:"Tune for international expansion: PCT national-phase, valuation refresh, transaction protocol roll-out."},
+    {min:81,max:95,name:"Strategic",key:"STRATEGIC",pill:"green",desc:"Multi-jurisdictional posture in place. Investor-ready. Cross-border filings substantially complete.",todo:"Maintain and monitor: annual audit, renewal discipline, portfolio expansion."},
+    {min:96,max:100,name:"Sovereign",key:"SOVEREIGN",pill:"green",desc:"Fortress IP posture. Transaction-ready across buy/sell/license events.",todo:"Sustain and exploit: strategic licensing, IP-backed financing, M&A optionality."},
+  ];
+  const WINS = {
+    T2:"Engage IP counsel to verify Nice Class filings — re-file in correct class if needed.",
+    T3:"File Madrid Protocol application for ASEAN markets (covers 3+ jurisdictions in one filing).",
+    I2:"Roll out updated employment contract template with express IP assignment; have every employee re-sign.",
+    I3:"Execute IP assignment deeds for any founder/advisor not yet formally assigned.",
+    I1:"Deploy Day-1 NDA process for all new hires; backfill existing employees.",
+    I4:"Adopt a standardised investor/board NDA template — single governing law.",
+    W1:"Build a revenue-by-jurisdiction map; align IP filings to top 80% of revenue first.",
+    W2:"Lodge trademark protection in production country.",
+    P1:"Compile a comprehensive IP asset register.",
+    P2:"Stand up a formal trade-secrets register with annual review cadence.",
+    R1:"Schedule patent feasibility review for core technology.",
+    R2:"Commission an FTO opinion before any major product launch or fundraise.",
+    A1:"Schedule a formal IP audit in the next 90 days.",
+    A2:"Generate an indicative IP valuation range for board / investor conversations.",
+    N1:"Implement a 90/60/30/7-day renewal reminder protocol.",
+    X1:"Document the IP transaction notification protocol.",
+    X2:"Run a chain-of-title clean-up before any anticipated funding round.",
+    T1:"Push pending TM applications to registration; do not commercialise on pending rights.",
+  };
+  let answers={}, step=-1;
+  const dimOf = c => DIMS.find(d=>d.code===c);
+
+  function setProg(){
+    $("#revProg").style.width = (step<0?0:Math.round(step/QS.length*100))+"%";
+    $("#revStep").textContent = step<0?`${QS.length} questions · ~7 min`:step>=QS.length?"Done":`Question ${step+1} of ${QS.length}`;
+  }
+  function renderQ(){
+    const q = QS[step]; const d = dimOf(q.dim);
+    const stage = $("#revStage"); stage.classList.remove("hidden");
+    stage.innerHTML = `<div class="q">
+      <span class="section-tag">${d.icon} ${d.name} · Q${step+1}/${QS.length}</span>
+      <div class="qnum">${q.id}${q.weight>1?` · weight ×${q.weight}`:""}</div>
+      <h2>${q.title}</h2>
+      <div class="why">${q.why}</div>
+      <div class="opts" id="revOpts">${q.opts.map(o=>`<button class="opt ${answers[q.id]===o.v?"sel":""}" data-v="${o.v}"><span class="ico">${o.ico}</span><div>${o.label}${o.note?`<small>${o.note}</small>`:""}</div></button>`).join("")}</div>
+    </div>`;
+    $("#revWeight").innerHTML = `Dimension: <b>${d.name}</b> · weight <b>${d.weight}%</b>${q.weight>1?` · q ×${q.weight}`:""}`;
+    $$("#revOpts .opt").forEach(b=>b.addEventListener("click",()=>{
+      answers[q.id]=parseFloat(b.dataset.v);
+      $$("#revOpts .opt").forEach(x=>x.classList.toggle("sel",x===b));
+      setTimeout(next,240);
+    }));
+    $("#revPrev").style.visibility = step===0?"hidden":"visible";
+    $("#revNext").textContent = step===QS.length-1?"Generate Report →":"Next →";
+  }
+  function next(){
+    if(step>=0 && answers[QS[step].id]===undefined){ alert("Pick an answer."); return; }
+    step++;
+    if(step>=QS.length){ showResult(); return; }
+    renderQ(); setProg();
+  }
+  function prev(){
+    if(step<=0){ reset(); return; }
+    step--; renderQ(); setProg();
+  }
+  function reset(){
+    answers={}; step=-1;
+    $("#revIntro").classList.remove("hidden");
+    $("#revStage").classList.add("hidden");
+    $("#revFoot").style.display="none";
+    $("#revResult").classList.add("hidden");
+    setProg();
+  }
+  function dimStats(){
+    return DIMS.map(d=>{
+      const list = QS.filter(q=>q.dim===d.code);
+      const maxRaw = list.reduce((s,q)=>s+q.weight,0);
+      const earned = list.reduce((s,q)=>s+((answers[q.id]||0)*q.weight),0);
+      return {...d,maxRaw,earned,pct:maxRaw?earned/maxRaw:0};
+    });
+  }
+  function drawRadar(stats){
+    const W=340,H=340,cx=W/2,cy=H/2,R=120, n=stats.length;
+    const rings = [0.25,0.5,0.75,1].map(t=>`<circle cx="${cx}" cy="${cy}" r="${R*t}" fill="none" stroke="rgba(10,37,64,${.08+t*.06})" stroke-width="1"/>`).join("");
+    const axes = stats.map((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;return `<line x1="${cx}" y1="${cy}" x2="${(cx+Math.cos(a)*R).toFixed(1)}" y2="${(cy+Math.sin(a)*R).toFixed(1)}" stroke="rgba(10,37,64,.14)"/>`;}).join("");
+    const labels = stats.map((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const lr=R+22;const x=cx+Math.cos(a)*lr,y=cy+Math.sin(a)*lr;const anchor=Math.abs(Math.cos(a))<.2?"middle":(Math.cos(a)>0?"start":"end");return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" font-size="10" fill="#64748b" text-anchor="${anchor}">${s.icon} ${s.name}</text>`;}).join("");
+    const points = stats.map((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const r=R*s.pct;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];});
+    const poly = points.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ");
+    const dots = points.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="#0a2540"/>`).join("");
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+      <defs><radialGradient id="rgrad2"><stop offset="0%" stop-color="rgba(37,99,235,.35)"/><stop offset="100%" stop-color="rgba(96,165,250,.18)"/></radialGradient></defs>
+      ${rings}${axes}<polygon points="${poly}" fill="url(#rgrad2)" stroke="#0a2540" stroke-width="1.5"/>${dots}${labels}
+    </svg>`;
+  }
+  function showResult(){
+    $("#revIntro").classList.add("hidden");
+    $("#revStage").classList.add("hidden");
+    $("#revFoot").style.display="none";
+    const stats = dimStats();
+    const overall = stats.reduce((s,d)=>s+d.pct*d.weight,0);
+    const pct = Math.round(overall);
+    const band = BANDS.find(b=>pct>=b.min&&pct<=b.max);
+    const cName = $("#revName").value.trim()||"[Client]";
+    const cDate = $("#revDate").value || new Date().toISOString().slice(0,10);
+    const cAdv = $("#revAdv").value.trim()||"Andrew Toh";
+    const cStg = $("#revStg").value.trim();
+    const actions = Object.keys(WINS).map(qid=>{
+      const q = QS.find(x=>x.id===qid); if(!q) return null;
+      const v = answers[qid]||0; if(v>=1) return null;
+      const d = dimOf(q.dim);
+      return {qid,title:WINS[qid],dim:d,impact:d.weight*q.weight*(1-v)};
+    }).filter(Boolean).sort((a,b)=>b.impact-a.impact).slice(0,6);
+    const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
+    const today = new Date(cDate||new Date());
+    const stronglist = stats.slice().sort((a,b)=>b.pct-a.pct).slice(0,4).filter(s=>s.pct>=.75).map(s=>`${s.icon} <b>${s.name}</b> — ${Math.round(s.pct*100)}%`);
+    const gaplist = stats.slice().sort((a,b)=>a.pct-b.pct).slice(0,4).filter(s=>s.pct<.75).map(s=>`${s.icon} <b>${s.name}</b> — ${Math.round(s.pct*100)}%`);
+
+    $("#revResult").classList.remove("hidden");
+    $("#revResult").innerHTML = `
+      <div class="card" style="background:linear-gradient(135deg,#0a2540 0%,#143a66 60%,#1e4d8c 100%);border:1px solid #143a66;padding:32px;position:relative;overflow:hidden;color:#fff">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#60a5fa,transparent)"></div>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div>
+            <div style="font-size:10px;letter-spacing:2.5px;color:#dbeafe;text-transform:uppercase">Confidential · Client Report</div>
+            <h2 style="font-family:Georgia,serif;font-size:30px;margin:8px 0 6px;color:#fff">IP Readiness Review</h2>
+            <p style="color:#cbd5e1;margin:0;font-size:13px">Prepared for <b style="color:#dbeafe">${esc(cName)}</b> · ${esc(cDate)}${cStg?` · ${esc(cStg)}`:""}</p>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;letter-spacing:1.5px;color:#cbd5e1;text-transform:uppercase">Lead Advisor</div>
+            <div style="font-family:Georgia,serif;font-size:15px;color:#dbeafe">${esc(cAdv)}</div>
+            <div style="font-size:11px;color:#94a3b8">Andrew Toh &amp; Partners</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center">
+          <div>
+            <span class="pill ${band.pill}" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);color:#dbeafe">${band.key}</span>
+            <div style="font-family:Georgia,serif;font-size:32px;margin:8px 0 4px;color:#fff">${band.name}</div>
+            <p style="font-size:14px;color:#e2e8f0;margin:0 0 10px">${band.desc}</p>
+            <p style="font-size:13px;color:#cbd5e1;margin:0"><b style="color:#dbeafe">Net assessment:</b> ${band.todo}</p>
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" class="no-print">
+              <button class="btn" style="background:#fff;color:#0a2540;border-color:#fff;font-weight:600" onclick="window.print()">⎙ Print / PDF</button>
+              <button class="btn" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#dbeafe" id="revRestart">↺ Retake</button>
+            </div>
+          </div>
+          <div><div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 200 200">
+              <defs><linearGradient id="grad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#dbeafe"/></linearGradient></defs>
+              <circle cx="100" cy="100" r="86" stroke="rgba(255,255,255,.15)" stroke-width="14" fill="none"/>
+              <circle cx="100" cy="100" r="86" stroke="url(#grad3)" stroke-width="14" fill="none" stroke-linecap="round" id="revRing" stroke-dasharray="540" stroke-dashoffset="540" style="transition:stroke-dashoffset 1.4s cubic-bezier(.18,.9,.4,1)"/>
+            </svg>
+            <div class="ring-center"><div class="label" style="color:#cbd5e1">Readiness Score</div><div class="pct" id="revPct" style="color:#fff">0%</div><div class="pts" style="color:#cbd5e1">${pct} / 100</div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <h3 class="section-title" style="margin-top:30px;font-size:22px;color:var(--navy-deep)">Section 01 · Readiness by Dimension</h3>
+      <div class="hairline"></div>
+      <div class="grid c4">${stats.map(s=>{const p=Math.round(s.pct*100);const lvl=p>=80?"Strong":p>=60?"Solid":p>=40?"Building":"Gap";return `<div class="card"><div style="font-size:22px">${s.icon}</div><h4 style="font-family:Georgia,serif;font-size:14px;margin:4px 0 2px;color:var(--navy-deep)">${s.name}</h4><div style="font-size:22px;font-weight:600;color:var(--navy-deep)">${p}%</div><div style="height:6px;background:var(--grey-light);border-radius:99px;overflow:hidden;margin:8px 0 6px"><span style="display:block;height:100%;width:${p}%;background:linear-gradient(90deg,var(--blue),var(--navy-deep))"></span></div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600">${lvl} · weight ${s.weight}%</div></div>`;}).join("")}</div>
+
+      <h3 class="section-title" style="margin-top:30px;font-size:22px;color:var(--navy-deep)">Section 02 · Readiness Radar</h3>
+      <div class="hairline"></div>
+      <div class="card" style="display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:center">
+        <div>${drawRadar(stats)}</div>
+        <div>
+          <h4 style="font-family:Georgia,serif;margin:0 0 6px;color:var(--navy-deep)">Posture across eight dimensions</h4>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:13px">A balanced posture is a wide, even web. Sharp inward dents are your weakest links.</p>
+          <ul style="margin:0;padding:0;list-style:none">${stats.map(s=>`<li style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)"><span>${s.icon} ${s.name}</span><b style="color:var(--navy-deep)">${Math.round(s.pct*100)}%</b></li>`).join("")}</ul>
+        </div>
+      </div>
+
+      <h3 class="section-title" style="margin-top:30px;font-size:22px">Section 03 · Strengths, Gaps &amp; Quick Wins</h3>
+      <div class="hairline"></div>
+      <div class="grid c3">
+        <div class="card"><h4 style="font-family:Georgia,serif;margin:0 0 4px">Strengths</h4><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">What's protecting you today</div><ul style="margin:0;padding:0;list-style:none">${(stronglist.length?stronglist:["No dimension above 75% yet. Build a foundation first."]).map(x=>`<li style="font-size:13px;padding:7px 0;border-bottom:1px solid var(--line);display:flex;gap:8px"><span style="color:var(--leaf);font-weight:700;width:18px">✓</span><span>${x}</span></li>`).join("")}</ul></div>
+        <div class="card"><h4 style="font-family:Georgia,serif;margin:0 0 4px">Gaps &amp; Risks</h4><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Where you are exposed</div><ul style="margin:0;padding:0;list-style:none">${(gaplist.length?gaplist:["No critical gaps. Maintain and monitor."]).map(x=>`<li style="font-size:13px;padding:7px 0;border-bottom:1px solid var(--line);display:flex;gap:8px"><span style="color:#f0b5b5;font-weight:700;width:18px">✗</span><span>${x}</span></li>`).join("")}</ul></div>
+        <div class="card"><h4 style="font-family:Georgia,serif;margin:0 0 4px">Quick Wins (90 days)</h4><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Fast, high-leverage moves</div><ul style="margin:0;padding:0;list-style:none">${(actions.length?actions.slice(0,5).map(a=>a.title):["Maintain annual review cadence and renewal calendar discipline."]).map(x=>`<li style="font-size:13px;padding:7px 0;border-bottom:1px solid var(--line);display:flex;gap:8px"><span style="color:var(--gold-soft);font-weight:700;width:18px">→</span><span>${x}</span></li>`).join("")}</ul></div>
+      </div>
+
+      <h3 class="section-title" style="margin-top:30px;font-size:22px">Section 04 · Prioritised Action Plan</h3>
+      <div class="hairline"></div>
+      <div class="card">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th style="text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px;border-bottom:1px solid var(--line)">#</th><th style="text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px;border-bottom:1px solid var(--line)">Action</th><th style="text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px;border-bottom:1px solid var(--line)">Priority</th><th style="text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px;border-bottom:1px solid var(--line)">Deadline</th></tr></thead>
+          <tbody>${actions.length?actions.map((a,i)=>{const pri=i<2?"HIGH":i<4?"MED":"LOW";const cls=i<2?"red":i<4?"amber":"green";const dl=addDays(today,i<2?30:i<4?90:180);return `<tr><td style="padding:10px 8px;border-bottom:1px solid var(--line);color:var(--gold-soft);font-weight:600;width:40px">${i+1}</td><td style="padding:10px 8px;border-bottom:1px solid var(--line);font-size:13.5px"><b>${esc(a.title)}</b><div style="color:var(--muted);font-size:12px;margin-top:3px">Dimension: ${a.dim.icon} ${esc(a.dim.name)}</div></td><td style="padding:10px 8px;border-bottom:1px solid var(--line)"><span class="pill ${cls}">${pri}</span></td><td style="padding:10px 8px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px">By ${dl}</td></tr>`;}).join(""):`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No urgent actions — IP posture sustained.</td></tr>`}</tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:30px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:18px">
+        Andrew Toh &amp; Partners · andrew@atpartner.co · +60-13-4133139<br/>
+        This Readiness Review is generated from self-reported answers. Confidential. Not legal advice.
+      </div>
+    `;
+    const C = 2*Math.PI*86;
+    const r = $("#revRing"); r.setAttribute("stroke-dasharray",C.toFixed(2));
+    setTimeout(()=>r.setAttribute("stroke-dashoffset",(C*(1-pct/100)).toFixed(2)),80);
+    const el = $("#revPct"); const t0=performance.now();
+    (function tick(now){const t=Math.min(1,(now-t0)/1100);const e=1-Math.pow(1-t,3);el.textContent=Math.round(pct*e)+"%";if(t<1)requestAnimationFrame(tick);})(performance.now());
+    $("#revRestart").addEventListener("click",reset);
+    // Mount lead-capture for the Review report
+    LeadCapture.mount({
+      container: $("#revResult"),
+      resultEl: $("#revResult"),
+      toolName: "review_18q",
+      toolLabel: "IP Readiness Review (18Q)",
+      fileBase: "ip-readiness-review",
+      getPayload: () => ({
+        score: pct,
+        band: band.key,
+        clientCompanyOnReport: cName,
+        reviewDate: cDate,
+        leadAdvisor: cAdv,
+        industryStage: cStg,
+        dimensions: stats.map(s=>({code:s.code,name:s.name,pct:Math.round(s.pct*100),weight:s.weight})),
+        topActions: actions.map(a=>({title:a.title,dimension:a.dim.name})),
+        answers: {...answers},
+      })
+    });
+    $("#revResult").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function init(){
+    $("#revDate").value = new Date().toISOString().slice(0,10);
+    $("#revStartBtn").addEventListener("click",()=>{ step=0; $("#revIntro").classList.add("hidden"); $("#revFoot").style.display="flex"; renderQ(); setProg(); });
+    $("#revNext").addEventListener("click",next);
+    $("#revPrev").addEventListener("click",prev);
+  }
+  return {init};
+})();
+Review.init();
+</script>
+<script>
+/* ===================== MODULE: FOREST (gamified tracker) ===================== */
+const Forest = (()=>{
+  const PILLARS = [
+    {code:"IP",name:"IP Protection",emoji:"🛡️"},
+    {code:"LC",name:"Legal Compliance",emoji:"⚖️"},
+    {code:"CS",name:"Corporate Structure",emoji:"🏛️"},
+    {code:"BC",name:"Business Coaching",emoji:"🎯"},
+  ];
+  const LEVELS = [
+    {name:"Seedling",min:0,max:20,icon:"🌱",desc:"Idea-stage. Discovery & registration basics."},
+    {name:"Sprout",min:21,max:45,icon:"🌿",desc:"Early ops. Core IP filed, founders aligned."},
+    {name:"Sapling",min:46,max:70,icon:"🪴",desc:"Growth-stage. Customer T&Cs, employment, governance."},
+    {name:"Tree",min:71,max:90,icon:"🌳",desc:"Scale-up. Holdco, shareholders' agreement, investor-ready."},
+    {name:"Forest",min:91,max:100,icon:"🌲",desc:"Mastery. Group structure, M&A-ready."},
+  ];
+  const QUESTS = [
+    ["IP","IP-01","Conduct trademark availability search","Foundation",2],
+    ["IP","IP-02","Set up NDA template library","Foundation",2],
+    ["IP","IP-03","Draft IP Assignment Deeds (founders/employees)","Foundation",3],
+    ["IP","IP-04","File trademark application MY (logo + wordmark)","Core",5],
+    ["IP","IP-05","Register domain names & social handles","Foundation",2],
+    ["IP","IP-06","Register copyright in core works","Core",4],
+    ["IP","IP-07","Trade secrets register","Core",5],
+    ["IP","IP-08","Conduct IP audit & valuation","Strategic",8],
+    ["IP","IP-09","International TM filing (Madrid Protocol)","Strategic",9],
+    ["IP","IP-10","Patent feasibility & filing","Strategic",10],
+    ["LC","LC-01","Customer T&Cs / Service Agreement","Foundation",3],
+    ["LC","LC-02","Privacy Policy (PDPA Malaysia)","Foundation",3],
+    ["LC","LC-03","Employment contract template w/ IP clauses","Core",4],
+    ["LC","LC-04","Vendor master agreement template","Core",4],
+    ["LC","LC-05","PDPA registration + DPO appointment","Core",5],
+    ["LC","LC-06","Industry-specific licensing review","Strategic",7],
+    ["LC","LC-07","Dispute resolution policy","Foundation",3],
+    ["LC","LC-08","Compliance calendar & annual review","Core",5],
+    ["LC","LC-09","Cross-border contract framework","Strategic",8],
+    ["LC","LC-10","Annual legal & regulatory health check","Strategic",8],
+    ["CS","CS-01","Incorporate Sdn Bhd with share structure","Foundation",3],
+    ["CS","CS-02","Tailored Constitution","Core",4],
+    ["CS","CS-03","Founders' Agreement (vesting, exits)","Foundation",3],
+    ["CS","CS-04","Shareholders' Agreement executed","Core",6],
+    ["CS","CS-05","Board cadence & resolution book","Foundation",2],
+    ["CS","CS-06","Statutory registers up to date","Foundation",2],
+    ["CS","CS-07","Holdco structure (MY or Labuan)","Strategic",8],
+    ["CS","CS-08","ESOP / Share scheme implemented","Strategic",8],
+    ["CS","CS-09","Group restructuring for tax efficiency","Strategic",7],
+    ["CS","CS-10","M&A / exit-readiness review","Strategic",7],
+    ["BC","BC-01","Vision/mission & 3-yr strategic plan","Foundation",3],
+    ["BC","BC-02","OKRs / KPI framework","Core",4],
+    ["BC","BC-03","Risk register & mitigation plan","Core",5],
+    ["BC","BC-04","Governance charter","Core",5],
+    ["BC","BC-05","Cap table maintained","Foundation",3],
+    ["BC","BC-06","Investor data room organised","Strategic",7],
+    ["BC","BC-07","Financial model & projections","Core",6],
+    ["BC","BC-08","Pitch deck fundability review","Foundation",3],
+    ["BC","BC-09","Founder coaching plan + 1:1 cadence","Foundation",2],
+    ["BC","BC-10","Succession & key-person risk plan","Strategic",7],
+  ].map(([pillar,id,name,tier,points])=>({pillar,id,name,tier,points}));
+  const BADGES = {
+    IP:{name:"IP Guardian",icon:"🛡️"},
+    LC:{name:"Compliance Sentinel",icon:"⚖️"},
+    CS:{name:"Structure Master",icon:"🏛️"},
+    BC:{name:"Founder Sage",icon:"🎯"},
+  };
+  const DEMO = {
+    "IP-01":"2025-08-15","IP-02":"2025-09-01","IP-03":"2025-10-10","IP-04":"2025-11-20",
+    "IP-05":"2025-08-20","IP-06":"2026-01-15","IP-07":"2026-02-10",
+    "LC-01":"2025-09-15","LC-02":"2025-09-20","LC-03":"2025-10-15","LC-04":"2026-01-20","LC-07":"2025-12-01",
+    "CS-01":"2024-06-01","CS-03":"2024-06-15","CS-04":"2025-09-10","CS-05":"2025-03-01","CS-06":"2025-03-15",
+    "BC-01":"2024-08-01","BC-02":"2025-04-01","BC-05":"2024-07-01","BC-08":"2025-06-15","BC-09":"2024-09-01",
+  };
+  const STORE = "ATP_FOREST_v1";
+  let state = load();
+  let view = "dash";
+  let qFilter = {pillar:"ALL",status:"ALL",search:""};
+
+  function newClient(name){
+    return {id:"c_"+Math.random().toString(36).slice(2,9), name, profile:{company:name,advisor:"Andrew Toh"}, quests:{}, createdAt:new Date().toISOString()};
+  }
+  function load(){
+    try{const raw=localStorage.getItem(STORE);if(raw){const s=JSON.parse(raw);if(s&&s.clients&&s.clients.length) return s;}}catch{}
+    const acme = newClient("ACME Tech Sdn Bhd"); acme.quests={...DEMO};
+    return {clients:[acme], currentId:acme.id};
+  }
+  function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+  function current(){ return state.clients.find(c=>c.id===state.currentId)||state.clients[0]; }
+  function pStat(c,code){
+    const list = QUESTS.filter(q=>q.pillar===code);
+    const total = list.reduce((s,q)=>s+q.points,0);
+    const earned = list.reduce((s,q)=>s+(c.quests[q.id]?q.points:0),0);
+    const pct = total?earned/total:0;
+    const lvl = LEVELS.find(L=>pct*100>=L.min&&pct*100<=L.max)||LEVELS[0];
+    return {code,total,earned,pct,level:lvl,count:list.length,done:list.filter(q=>c.quests[q.id]).length};
+  }
+  function oStat(c){
+    const per = PILLARS.map(p=>pStat(c,p.code));
+    const total = per.reduce((s,x)=>s+x.total,0);
+    const earned = per.reduce((s,x)=>s+x.earned,0);
+    const pct = total?earned/total:0;
+    return {total,earned,pct,level:LEVELS.find(L=>pct*100>=L.min&&pct*100<=L.max)||LEVELS[0],per,done:QUESTS.filter(q=>c.quests[q.id]).length,pending:QUESTS.length-QUESTS.filter(q=>c.quests[q.id]).length};
+  }
+  function renderClientSel(){
+    $("#forestClientSel").innerHTML = state.clients.map(c=>`<option value="${c.id}" ${c.id===state.currentId?"selected":""}>${esc(c.name)}</option>`).join("");
+  }
+  function renderDash(){
+    const c = current(); const o = oStat(c);
+    const idx = LEVELS.indexOf(o.level); const nxt = LEVELS[idx+1];
+    let xpText="Forest Master · Mastery achieved", remain="";
+    if(nxt){ const need = Math.ceil(nxt.min/100*o.total)-o.earned; xpText=`${o.level.name} → ${nxt.name}`; remain=`${Math.max(0,need)} pts to next level`; }
+    const dateVals = Object.values(c.quests).filter(v=>typeof v==="string");
+    const lastDate = dateVals.length?new Date(dateVals.sort().slice(-1)[0]).toLocaleDateString():"—";
+    const badges = o.per.filter(p=>p.pct*100>=71).length;
+    const rec = QUESTS.filter(q=>!c.quests[q.id]).sort((a,b)=>b.points-a.points).slice(0,5);
+    $("#forestDashView").innerHTML = `
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px;margin-bottom:22px" id="forestHero">
+        <div class="card" style="background:linear-gradient(135deg,#0a2540 0%,#143a66 60%,#1e4d8c 100%);border:1px solid #143a66;padding:22px;position:relative;overflow:hidden;color:#fff">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:14px"><div style="font-size:54px;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))">${o.level.icon}</div>
+              <div>
+                <div style="font-size:11px;color:#dbeafe;letter-spacing:.4px;text-transform:uppercase">Overall journey</div>
+                <h2 style="font-family:Georgia,serif;font-size:32px;margin:0 0 4px;letter-spacing:.5px;color:#fff">${o.level.name}</h2>
+                <div style="font-size:13px;color:#cbd5e1">${o.level.desc}</div>
+              </div></div>
+            <div style="text-align:right">
+              <div style="font-size:13px;color:#cbd5e1">Total XP</div>
+              <div style="font-size:28px;font-weight:600;color:#fff">${o.earned} / ${o.total}</div>
+              <div style="font-size:13px;color:#cbd5e1">${(o.pct*100).toFixed(1)}%</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;height:14px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;border:1px solid rgba(255,255,255,.18)"><span style="display:block;height:100%;width:${(o.pct*100).toFixed(2)}%;background:linear-gradient(90deg,#60a5fa,#dbeafe);transition:width .6s ease"></span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1;margin-top:6px"><span>${xpText}</span><span>${remain}</span></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px">
+            <div style="flex:1;min-width:110px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:10px 12px;border-radius:10px"><div style="font-size:20px;font-weight:600;color:#fff">${o.done}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#cbd5e1">Quests done</div></div>
+            <div style="flex:1;min-width:110px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:10px 12px;border-radius:10px"><div style="font-size:20px;font-weight:600;color:#fff">${o.pending}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#cbd5e1">Pending</div></div>
+            <div style="flex:1;min-width:110px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:10px 12px;border-radius:10px"><div style="font-size:20px;font-weight:600;color:#fff">${badges}/4</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#cbd5e1">Badges</div></div>
+            <div style="flex:1;min-width:110px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:10px 12px;border-radius:10px"><div style="font-size:15px;font-weight:600;color:#fff">${lastDate}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#cbd5e1">Last quest</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-family:Georgia,serif;margin-top:0;color:var(--navy-deep)">Next Recommended Quests</h3>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:10px">Top pending by impact — focus your next quarter.</div>
+          ${rec.length?rec.map(q=>{const p=PILLARS.find(x=>x.code===q.pillar);return `<div style="display:flex;align-items:center;gap:10px;padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--grey-light);margin-bottom:6px"><div style="font-size:18px">${p.emoji}</div><div style="flex:1"><div style="font-size:13px;color:var(--text)">${esc(q.name)}</div><div style="font-size:11px;color:var(--muted)">${q.id} · ${q.tier}</div></div><div style="font-weight:600;color:var(--navy-deep)">+${q.points}</div></div>`;}).join(""):`<div style="color:var(--success);font-size:13px">🎉 All quests complete — Forest mastery!</div>`}
+        </div>
+      </div>
+      <h2 class="section-title" style="font-size:22px;color:var(--navy-deep)">Pillar Progress</h2>
+      <div class="hairline"></div>
+      <div class="grid c4">${o.per.map(s=>{const p=PILLARS.find(x=>x.code===s.code);const badged=s.pct*100>=71;return `<div class="card"><h3 style="font-size:14px;margin:0 0 6px;color:var(--navy-deep)">${p.emoji} ${p.name}</h3><div style="font-size:26px;font-weight:600;color:var(--navy-deep)">${(s.pct*100).toFixed(0)}%</div><div style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600">${s.level.icon} ${s.level.name}</div><div style="height:8px;border-radius:99px;background:var(--grey-light);overflow:hidden;margin:10px 0 6px"><span style="display:block;height:100%;width:${(s.pct*100).toFixed(0)}%;background:linear-gradient(90deg,var(--blue),var(--navy-deep))"></span></div><div style="font-size:12px;color:var(--muted)">${s.earned}/${s.total} pts · ${s.done}/${s.count} quests</div><div style="margin-top:8px">${badged?`<span class="pill green">🏅 ${BADGES[s.code].name}</span>`:`<span class="pill" style="background:var(--grey-light);color:var(--muted);border-color:var(--line)">Locked</span>`}</div></div>`;}).join("")}</div>
+    `;
+  }
+  function renderQuests(){
+    const c = current();
+    let list = QUESTS.slice();
+    if(qFilter.pillar!=="ALL") list = list.filter(q=>q.pillar===qFilter.pillar);
+    if(qFilter.status==="DONE") list = list.filter(q=>c.quests[q.id]);
+    if(qFilter.status==="PENDING") list = list.filter(q=>!c.quests[q.id]);
+    if(qFilter.search) list = list.filter(q=>q.name.toLowerCase().includes(qFilter.search)||q.id.toLowerCase().includes(qFilter.search));
+    $("#forestQuestsView").innerHTML = `
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div style="display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden" id="fPillFilter">
+          ${["ALL","IP","LC","CS","BC"].map(f=>`<button data-f="${f}" style="background:${qFilter.pillar===f?"var(--green)":"transparent"};color:${qFilter.pillar===f?"var(--text)":"var(--muted)"};border:0;padding:7px 11px;font-size:12.5px">${f==="ALL"?"All":f}</button>`).join("")}
+        </div>
+        <div style="display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden" id="fStatFilter">
+          ${[["ALL","All"],["DONE","Done"],["PENDING","Pending"]].map(([s,l])=>`<button data-s="${s}" style="background:${qFilter.status===s?"var(--green)":"transparent"};color:${qFilter.status===s?"var(--text)":"var(--muted)"};border:0;padding:7px 11px;font-size:12.5px">${l}</button>`).join("")}
+        </div>
+        <input id="fSearch" value="${esc(qFilter.search)}" placeholder="Search…" style="flex:1;min-width:140px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:7px 11px;font-size:13px"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+      ${list.map(q=>{const done=!!c.quests[q.id];const date=typeof c.quests[q.id]==="string"?c.quests[q.id]:"";const p=PILLARS.find(x=>x.code===q.pillar);const tierColor={Foundation:"#7fb37f",Core:"#d4a73e",Strategic:"#e07a5f"}[q.tier];return `<div class="card" style="display:grid;grid-template-columns:30px 70px 1fr 100px 70px 140px;gap:10px;align-items:center;padding:10px 14px;${done?"border-color:rgba(127,179,127,.35);background:linear-gradient(90deg,rgba(127,179,127,.08),var(--panel))":""}">
+        <input type="checkbox" ${done?"checked":""} data-tog="${q.id}" style="appearance:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--green-mid);background:transparent;display:inline-grid;place-items:center;cursor:pointer"/>
+        <div><span style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">${p.emoji} ${p.code}</span><div style="font-family:'SF Mono',ui-monospace,monospace;color:var(--muted);font-size:11px">${q.id}</div></div>
+        <div style="font-size:13.5px">${esc(q.name)}</div>
+        <div><span class="pill" style="background:${tierColor}22;color:${tierColor};border-color:${tierColor}55">${q.tier}</span></div>
+        <div style="font-weight:600;color:var(--gold-soft);text-align:right">+${q.points} pts</div>
+        <input type="date" value="${date}" data-date="${q.id}" style="background:#0f1c10;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:11.5px;width:100%"/>
+      </div>`;}).join("")}
+      </div>
+    `;
+    // CSS for checkbox checked state (inline injection)
+    $$("input[data-tog]").forEach(cb=>{
+      cb.addEventListener("change",e=>{
+        const id=e.target.dataset.tog;
+        if(e.target.checked){ current().quests[id]=new Date().toISOString().slice(0,10); toast(`✓ +${QUESTS.find(x=>x.id===id).points} XP`); }
+        else delete current().quests[id];
+        save(); render();
+      });
+      // simulate checked visual
+      if(cb.checked){ cb.style.background="linear-gradient(180deg,#86c186,#3e7a3e)"; cb.style.borderColor="#3e7a3e"; }
+    });
+    $$("input[data-date]").forEach(inp=>inp.addEventListener("change",e=>{
+      const id=e.target.dataset.date; const v=e.target.value;
+      if(v){ current().quests[id]=v; toast(`✓ Quest dated: ${v}`); } else delete current().quests[id];
+      save(); render();
+    }));
+    $$("#fPillFilter button").forEach(b=>b.addEventListener("click",()=>{qFilter.pillar=b.dataset.f;render();}));
+    $$("#fStatFilter button").forEach(b=>b.addEventListener("click",()=>{qFilter.status=b.dataset.s;render();}));
+    $("#fSearch").addEventListener("input",e=>{qFilter.search=e.target.value.toLowerCase();render();});
+  }
+  function renderBadges(){
+    const c = current(); const stats = PILLARS.map(p=>pStat(c,p.code));
+    $("#forestBadgesView").innerHTML = `
+      <h3 class="section-title" style="font-size:22px;margin-top:0">Badge Gallery</h3>
+      <div style="color:var(--muted);font-size:13px;margin-bottom:14px">Badges unlock when a pillar reaches <b>Tree</b> level (71%+).</div>
+      <div class="grid c4">${stats.map(s=>{const b=BADGES[s.code];const on=s.pct*100>=71;return `<div class="card" style="text-align:center;padding:20px;${on?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,167,62,.15);background:linear-gradient(180deg,#2e4d2e,#1d3320)":"opacity:.6;border-style:dashed"}"><div style="font-size:44px;${on?"":"filter:grayscale(.8)"}">${b.icon}</div><h4 style="font-family:Georgia,serif;margin:6px 0 4px">${b.name}</h4><p style="margin:0;font-size:12px;color:var(--muted)">${on?`Earned at ${(s.pct*100).toFixed(0)}%`:`${(s.pct*100).toFixed(0)}% — needs 71%`}</p></div>`;}).join("")}</div>
+      <h3 class="section-title" style="font-size:22px;margin-top:30px">Master Levels</h3>
+      <div class="hairline"></div>
+      <div class="grid c3">${LEVELS.map(L=>{const reached=oStat(c).pct*100>=L.min;return `<div class="card" style="text-align:center;${reached?"":"opacity:.55"}"><div style="font-size:42px">${L.icon}</div><h3 style="font-family:Georgia,serif;margin:6px 0 2px">${L.name}</h3><div style="font-size:12px;color:var(--muted)">${L.min}–${L.max}%</div><p style="font-size:13px;margin:8px 0 0">${L.desc}</p><div style="margin-top:8px">${reached?`<span class="pill green">Reached</span>`:`<span class="pill" style="background:rgba(0,0,0,.2);color:var(--muted);border-color:var(--line)">Locked</span>`}</div></div>`;}).join("")}</div>
+    `;
+  }
+  function toast(msg){
+    let t = document.getElementById("forestToast");
+    if(!t){ t = document.createElement("div"); t.id="forestToast"; t.style.cssText="position:fixed;left:50%;top:24px;transform:translate(-50%,-20px);background:linear-gradient(180deg,#3e7a3e,#1f3a1f);color:#fff;padding:10px 18px;border-radius:99px;border:1px solid var(--gold);box-shadow:0 8px 30px rgba(0,0,0,.5);font-size:13px;opacity:0;transition:all .3s;z-index:100"; document.body.appendChild(t); }
+    t.textContent = msg; t.style.opacity="1"; t.style.transform="translate(-50%,0)";
+    clearTimeout(t._h); t._h = setTimeout(()=>{t.style.opacity="0";t.style.transform="translate(-50%,-20px);"},2000);
+  }
+  function render(){
+    renderClientSel();
+    $("#forestDashView").classList.toggle("hidden", view!=="dash");
+    $("#forestQuestsView").classList.toggle("hidden", view!=="quests");
+    $("#forestBadgesView").classList.toggle("hidden", view!=="badges");
+    if(view==="dash") renderDash();
+    if(view==="quests") renderQuests();
+    if(view==="badges") renderBadges();
+  }
+  function init(){
+    $$("#forestNav button").forEach(b=>b.addEventListener("click",()=>{
+      view = b.dataset.fv;
+      $$("#forestNav button").forEach(x=>{x.style.background="transparent";x.style.color="var(--muted)";});
+      b.style.background="var(--green)"; b.style.color="var(--text)";
+      render();
+    }));
+    $("#forestClientSel").addEventListener("change",e=>{ state.currentId=e.target.value; save(); render(); });
+    $("#forestAdd").addEventListener("click",()=>{
+      const name = prompt("New client name:"); if(!name) return;
+      const c = newClient(name.trim()); state.clients.push(c); state.currentId=c.id; save(); render(); toast(`🌱 Planted: ${name}`);
+    });
+    $("#forestRename").addEventListener("click",()=>{
+      const c = current(); const name = prompt("Rename client:", c.name); if(!name) return;
+      c.name = name.trim(); c.profile.company = c.name; save(); render();
+    });
+    $("#forestDel").addEventListener("click",()=>{
+      if(state.clients.length===1){ alert("At least one client must exist."); return; }
+      const c = current(); if(!confirm(`Delete "${c.name}"?`)) return;
+      state.clients = state.clients.filter(x=>x.id!==c.id); state.currentId=state.clients[0].id; save(); render();
+    });
+    $("#forestDemo").addEventListener("click",()=>{
+      const c = current(); c.quests={...DEMO}; save(); render(); toast("🌳 ACME demo loaded");
+    });
+    $("#forestReset").addEventListener("click",()=>{
+      if(!confirm("Reset all quest progress for this client?")) return;
+      current().quests={}; save(); render(); toast("Progress reset");
+    });
+  }
+  init();
+  return {render};
+})();
+</script>
+<script>
+/* ===================== MODULE: CHAT (floating + full) ===================== */
+const Chat = (()=>{
+  const OPENERS = [
+    "In my experience advising Malaysian SMEs over the years,",
+    "Honestly, the way I usually explain this to clients —",
+    "Good question — let me give it to you the way I would in a first call:",
+    "I'll be straight with you:",
+    "Speaking plainly,",
+    "Here's how it actually plays out in practice:",
+  ];
+  const CITE = "General guidance only — not legal advice on your specific matter.";
+  const KB = [
+    {id:"tm_register",keywords:["register trademark","file trademark","trademark malaysia","trademark application","myipo","tm registration","register tm","trademark filing"],
+      answer:`The process in Malaysia under the <em>Trade Marks Act 2019</em> is straightforward in theory, but the devil's in the details. Roughly:
+
+1) <b>Clearance search</b> at MyIPO (and WIPO if you're thinking regional) — to make sure no one's beaten you to it. ~1 in 4 founders skip this and regret it.
+2) <b>Pick the right Nice Class(es)</b> — this is where most people quietly fail. A FMCG brand belongs in Class 30, not Class 35 (advertising). Wrong class = no protection in your actual market.
+3) <b>File</b> with MyIPO. Government fee ~<b>RM 950 per class</b>; all-in with professional handling typically <b>RM 1,500–2,500 per class</b>.
+4) <b>Examination and publication</b>: ~<b>12–18 months</b> if no objections.
+5) <b>Registration certificate</b> — only at this point do you have enforceable statutory rights. "TM Pending" gives you almost nothing.
+
+The mistake I see most often: people commercialise on a pending application and assume they're protected. They're not.`,
+      followups:["What Nice Class should I file my trademark in?","How much does it cost to file a trademark in Malaysia?","What is the Madrid Protocol and should I use it?"]},
+    {id:"tm_class",keywords:["nice class","trademark class","what class","class 9","class 30","class 35","class 42","goods and services class"],
+      answer:`The Nice Classification has 45 classes (1–34 goods, 35–45 services), and choosing wrong is the single most common mistake I see.
+
+Common pitfalls:
+• <b>SaaS/software</b>: usually needs <em>Class 9</em> (software) <em>and</em> <em>Class 42</em> (SaaS) — most file only one.
+• <b>F&B brand</b>: needs the actual goods class (<em>Class 30</em> for coffee, <em>32</em> for beverages) — <em>not Class 35</em> (advertising).
+• <b>Fintech</b>: <em>Class 36</em> (financial services) <em>plus</em> <em>Class 42</em>.
+
+Before you file, have IP counsel review your products and map them to the right classes. The marginal cost of an extra class is nothing compared to having to re-file later — by then a squatter may have your mark in the correct class.`,
+      followups:["How much does it cost to file a trademark in Malaysia?","How do I register a trademark in Malaysia?"]},
+    {id:"tm_cost",keywords:["cost trademark","trademark fee","tm price","how much trademark","cost to register","fees trademark","myipo fee"],
+      answer:`Rough numbers, Malaysia, 2026:
+
+• <b>Government filing</b>: ~<b>RM 950 per class</b> (online).
+• <b>Professional fees</b>: typically <b>RM 1,500–2,500 per class</b> at boutique firms.
+• <b>Examination objection response</b>: add RM 1,500–3,000.
+• <b>Renewal</b>: every 10 years, ~RM 950/class.
+
+For <b>ASEAN via Madrid Protocol</b>: one application covers SG, ID, VN, TH etc. Indicative <b>RM 8,000–15,000</b> for 3 jurisdictions.
+
+The upfront cost of doing it right is small compared to <b>RM 50K–250K</b> to recover a hijacked TM. The maths isn't close.`,
+      followups:["What is the Madrid Protocol and should I use it?","What Nice Class should I file my trademark in?"]},
+    {id:"tm_madrid",keywords:["madrid protocol","international trademark","madrid system","wipo madrid","file overseas","abroad trademark","singapore trademark","indonesia trademark"],
+      answer:`Madrid Protocol = "one application, multiple jurisdictions". File once via MyIPO, designate countries, WIPO routes it.
+
+When I recommend it:
+• Selling in 2+ foreign markets (SG, ID, VN, TH, CN).
+• Cost efficiency — one filing fee, one renewal cycle.
+• Solid Malaysian application (Madrid is "dependent" on home application for 5 years).
+
+When direct filing is better:
+• Only one specific jurisdiction needed.
+• Country not a Madrid member.
+• Country has tricky examination practices.
+
+The biggest mistake: <b>waiting</b>. Once a competitor or distributor registers your mark in SG/ID first, recovery is RM 50K–250K per jurisdiction. Madrid is the cheap insurance.`,
+      followups:["How much does it cost to file a trademark in Malaysia?","How do I register a trademark in Malaysia?"]},
+    {id:"patent_my",keywords:["patent malaysia","file patent","patent application","patents act","myipo patent","invention patent"],
+      answer:`Patents in Malaysia: <em>Patents Act 1983</em>. Basics:
+
+• <b>Patentability</b>: novel, inventive step, industrially applicable. Software <em>as such</em> excluded — but software with technical effect is patentable.
+• <b>Priority date</b> = filing date. Public disclosure without filing first generally destroys novelty. <em>File before launch.</em>
+• <b>Examination</b> by MyIPO. Time to grant: <b>3–5 years</b>. Cost: <b>RM 8,000–20,000</b> all-in.
+• <b>Annuities</b> from year 2 onwards — miss one, lose the patent.
+• <b>Term</b>: 20 years from filing.
+
+Strategic question I always ask first: <b>"Do you actually need a patent, or do you need trade-secret protection?"</b> Patent forces public disclosure; trade secret stays hidden but is fragile if leaked.`,
+      followups:["What is PCT national phase?","What is a freedom-to-operate opinion?"]},
+    {id:"pct",keywords:["pct","patent cooperation","international patent","pct national","national phase"],
+      answer:`PCT = "delay the decision, preserve the date". One application gives priority in 150+ countries. You have <b>30 months from the priority date</b> to enter national phase.
+
+How I use it:
+• File PCT around the time of home patent.
+• 30-month window: validate commercially, raise funding, do FTO on target markets.
+• Enter national phase only where business actually plans to operate.
+
+<b>30-month deadline is absolute.</b> Miss it and the priority date is gone — unrecoverable. I've seen patents worth millions lost to missed deadlines.
+
+Budget: <b>RM 40K–80K per major jurisdiction</b> including local counsel and translations.`,
+      followups:["How do I file a patent in Malaysia?","What is a freedom-to-operate opinion?"]},
+    {id:"fto",keywords:["fto","freedom to operate","freedom-to-operate","infringe patent","patent search","clearance"],
+      answer:`FTO answers one question: <b>"Can I commercialise this without infringing someone else's patent?"</b>
+
+Not the same as a patentability search (which asks "can I get a patent?"). Two different worlds, often conflated.
+
+When you must have one:
+• Before launching into a new jurisdiction.
+• Before fundraising — sophisticated investors will ask.
+• Before any M&A.
+• When entering a crowded space (ML/AI-adjacent).
+
+Cost: <b>RM 25K–80K</b> depending on tech and jurisdictions. Not cheap — but finding out post-launch that you infringe a granted patent can be enterprise-ending. We've seen RM 5M+ damages plus injunctions.`,
+      followups:["What is PCT national phase?","How do I file a patent in Malaysia?"]},
+    {id:"employee_ip",keywords:["employee ip","staff ip","employee invention","work for hire","ip assignment","ip belongs","employee created"],
+      answer:`This is the <b>#1 surprise</b> for founders in due diligence — and the one that costs the most.
+
+Under Malaysian law, employee-created IP <b>does not automatically vest in the company</b> unless the employment contract expressly says so:
+• <b>Copyright</b>: partial statutory rule (s.26(2)(b) Copyright Act 1987) — narrower than people assume.
+• <b>Patents</b>: common law principles, very limited circumstances.
+• <b>TMs / trade secrets / designs</b>: no automatic transfer at all.
+
+Fix is simple and cheap: <b>every employment contract must contain an express IP assignment clause</b>. Plus separate <em>IP assignment deeds</em> for advisors and contract developers.
+
+Universal DD question: "Show me the IP assignment for every developer who built this product." Can't produce it → deal stalls or you give up 10–20% holdback while re-papering at 5–10× original cost.`,
+      followups:["What clauses should an NDA contain in Malaysia?","Are non-compete clauses enforceable in Malaysia?","How do I get my company investor-ready for due diligence?"]},
+    {id:"nda",keywords:["nda","non disclosure","confidentiality","confidential agreement","staff nda","vendor nda"],
+      answer:`Proper NDA in the Malaysian context should cover:
+
+1) <b>Definition</b> of Confidential Information — broad but not absurdly so. Carve out: publicly known, independently developed, lawfully received from third parties.
+2) <b>Permitted use</b> — limited to the specific purpose.
+3) <b>Duration</b> — for employees, during and after (2–5 years post-termination; indefinite for trade secrets).
+4) <b>Return / destruction</b> on termination.
+5) <b>Remedies</b> — injunctive relief.
+6) <b>Governing law &amp; jurisdiction</b> — Malaysian, unless specific reason.
+
+For employees, NDA inside the employment contract — signed Day 1.
+
+Cautionary tale: most online templates are US/UK drafted, referencing statutes that don't exist here. Often unenforceable. <b>Section 27 Contracts Act 1950</b> voids restraints beyond reasonable — so an NDA blocking ex-employees from working in the industry forever <em>will not hold</em>.`,
+      followups:["Are non-compete clauses enforceable in Malaysia?","Does employee IP belong to the company in Malaysia?"]},
+    {id:"noncompete",keywords:["non compete","non-compete","restraint of trade","section 27","s.27","compete clause","post termination"],
+      answer:`Short answer: <b>broad non-compete clauses are generally unenforceable in Malaysia</b> under <em>Section 27 of the Contracts Act 1950</em>.
+
+What actually works:
+• <b>Non-solicitation</b> of customers/employees — reasonable duration (6–12 months) and geography — generally enforceable.
+• <b>Confidentiality / NDA</b> obligations post-termination — enforceable if drafted properly.
+• <b>Garden leave</b> during notice period.
+• <b>Express IP assignment</b> — ensures what they built belongs to you.
+
+Mistake I see: founders import US-style 2-year non-compete. Won't hold. Worse, an unenforceable clause can signal over-reach to a court, hurting the parts that <em>are</em> enforceable.
+
+Build the moat with non-solicit + NDA + IP assignment. That's the enforceable trio.`,
+      followups:["What clauses should an NDA contain in Malaysia?","Does employee IP belong to the company in Malaysia?"]},
+    {id:"sdnbhd",keywords:["sdn bhd","incorporate","incorporation","setup company","new company","ssm","companies act","private limited"],
+      answer:`Incorporating a Sdn Bhd under <em>Companies Act 2016</em> is mechanically simple via SSM. "Simple" and "done properly" aren't the same thing.
+
+Think about <b>before</b> incorporation:
+
+1) <b>Share structure</b> — 100,000 ordinary shares of RM 0.01, fully paid (not just 100 shares — you can't split later cleanly).
+2) <b>Multiple share classes</b> if you plan to raise — ordinary, preference, founder shares with weighted voting.
+3) <b>Constitution</b> — tailor it: pre-emption, drag-along, tag-along, board composition.
+4) <b>Directors</b> — at least one ordinarily resident in MY. Fiduciary duties, not just admin.
+5) <b>Founders' Agreement</b> — sign <em>before</em> you incorporate.
+6) <b>IP assignment from founders</b> — assign pre-incorporation contributions in writing.
+
+SSM fees: under RM 2,000. Doing it properly with legal: RM 5,000–15,000 — and that's the bit that actually protects you.`,
+      followups:["What is a founders agreement?","What is a shareholders agreement and why do I need one?","Should I set up a Holdco?"]},
+    {id:"founders_agreement",keywords:["founders agreement","founder agreement","cofounder","co-founder","founders deal","founder split"],
+      answer:`The document I wish every founder had <em>before</em> they got too excited.
+
+It answers what would otherwise destroy the company in year 3:
+• <b>Equity split</b> and why.
+• <b>Vesting</b> — 4 years with 1-year cliff.
+• <b>Roles &amp; decision rights</b>.
+• <b>IP assignment</b> — everything each founder has contributed.
+• <b>Vesting accelerators</b> — termination, death, disability, acquisition.
+• <b>Bad-leaver vs good-leaver</b> — share buyback at what price?
+• <b>Dispute resolution</b> — mediation, arbitration, before court.
+
+Pattern I see: three friends, no agreement, year 2 one founder ghosts. The other two are stuck — ghost owns 33%, buyout is expensive, dilution requires their consent. Company stalls.
+
+Cost: <b>RM 3,000–6,000</b> properly drafted. Cleanup cost if skipped: multiple of that, plus emotional cost.`,
+      followups:["What is a shareholders agreement and why do I need one?","How do I incorporate a Sdn Bhd properly?"]},
+    {id:"shareholders_agreement",keywords:["shareholders agreement","sha","shareholder agreement","investor rights","drag along","tag along","pre-emption"],
+      answer:`SHA governs the relationship <em>between shareholders</em>, distinct from the Constitution (governing the company). A founder-stage SHA usually covers:
+
+• <b>Pre-emption rights</b> — existing shareholders first right to new/transferring shares.
+• <b>Drag-along</b> — majority can compel minority to sell in exit.
+• <b>Tag-along</b> — minority can join a sale on same terms.
+• <b>Reserved matters</b> — needs unanimous/super-majority: new shares, debt, M&amp;A, related-party.
+• <b>Board composition</b> — appointment, observer rights.
+• <b>Information rights</b> — monthly/quarterly accounts, annual budget.
+• <b>Exit and liquidity</b> — IPO, mandatory buy-back, valuation.
+• <b>Anti-dilution</b> — usually broad-based weighted average.
+• <b>Deadlock resolution</b>.
+
+When: at first external investment, latest. Cost: <b>RM 8,000–25,000</b>. A fraction of the cost of unresolved governance disputes.`,
+      followups:["What is a founders agreement?","Should I set up a Holdco?","What is an ESOP and how do I implement one?"]},
+    {id:"holdco",keywords:["holdco","holding company","group structure","labuan","restructure","tax structure","group hold"],
+      answer:`Holdco = holding company above your operating Sdn Bhd. Why I recommend:
+
+• <b>Limited liability ring-fencing</b> — opco risk doesn't reach holdco assets.
+• <b>Tax efficiency</b> — inter-company dividends exempt; group loss relief.
+• <b>IP centralisation</b> — IP held at holdco, licensed down.
+• <b>Multi-jurisdiction</b> — easier to add subs in SG, ID.
+• <b>Investor optionality</b> — cleaner for cross-border deals.
+
+When <b>not</b>:
+• Single-market, single-product, no plans to expand/raise — premature complexity costs real money.
+• Haven't taken tax advice — moving IP can trigger stamp duty, RPGT-adjacent issues, transfer pricing.
+
+Do it <b>before</b> Series A, not during. Cost: <b>RM 15,000–40,000</b>.`,
+      followups:["What is an ESOP and how do I implement one?","How do I get my company investor-ready for due diligence?"]},
+    {id:"esop",keywords:["esop","employee share","share scheme","stock option","employee stock","share option"],
+      answer:`How you give employees real upside without parting with cash.
+
+• <b>Pool size</b>: 10–15% fully-diluted, often required pre-money by investors (founders dilute).
+• <b>Vesting</b>: 4 years with 1-year cliff.
+• <b>Strike price</b>: fair market value at grant, board-approved valuation.
+• <b>Exercise window</b>: 90 days post-termination common.
+• <b>Acceleration</b>: single-trigger (change of control) or double-trigger.
+
+Malaysia specifics:
+• <b>Tax</b>: gain on exercise = employment income under ITEss Rules 2008.
+• <b>EPF</b>: generally not contributable on share benefits.
+• <b>Foreign employees</b>: home jurisdiction considerations.
+
+Mistake: verbally promising "options" without setting up a scheme. Two years later — no docs, no strike price. The promise gets honoured at huge cost or it doesn't. <b>Draft and approve the scheme first, then grant under it.</b>`,
+      followups:["What is a shareholders agreement and why do I need one?","Should I set up a Holdco?"]},
+    {id:"pdpa",keywords:["pdpa","personal data","data protection","privacy policy","data processing","dpo","data subject"],
+      answer:`PDPA 2010 (+2024 amendments) applies to anyone processing personal data for commercial transactions in Malaysia. Seven principles: General, Notice &amp; Choice, Disclosure, Security, Retention, Data Integrity, Access.
+
+What an SME needs:
+• <b>Privacy Policy</b> on website — English <em>and</em> BM.
+• <b>Consent capture</b> at every collection point.
+• <b>Data Processing Register</b> — what data, why, where, who, how long.
+• If processing certain categories — <b>PDPA registration</b> with the Department.
+• Under 2024 amendments — <b>DPO</b> for prescribed data users, <b>72-hour breach notification</b>.
+• Cross-border transfer compliance under the amended whitelist regime.
+
+Penalties have teeth: up to <b>RM 1 million</b> and/or 3 years' jail for serious breaches.`,
+      followups:["What clauses should an NDA contain in Malaysia?","How do I get my company investor-ready for due diligence?"]},
+    {id:"dd_ready",keywords:["due diligence","investor ready","fundraising","series a","dd ready","fundraise","data room","investor"],
+      answer:`Investors commission DD to find reasons <em>not</em> to invest or to discount. Your job: remove those reasons. Clean DD pack:
+
+<b>Corporate</b>: incorporation docs, constitution, statutory registers, board/shareholder resolutions, cap table (current, fully diluted, version-controlled), SHA + side letters.
+
+<b>IP</b>: register of all IP, TM certificates, <b>signed IP assignments from every founder/employee/contractor/agency</b>, IP licences in/out.
+
+<b>Contracts</b>: customer masters, top vendors, employment contracts with IP/NDA clauses, ESOP docs.
+
+<b>Compliance</b>: PDPA, industry licences, tax (audited accounts, SST, EPF, SOCSO, EIS), employee handbook.
+
+<b>Litigation</b>: schedule of pending/threatened/settled disputes.
+
+Cleanest companies close at full valuation in 8–10 weeks. Messy ones fall out or close at 15–25% discount with holdbacks. <b>Start 6–12 months before</b> you raise.`,
+      followups:["What is a shareholders agreement and why do I need one?","Does employee IP belong to the company in Malaysia?","What does PDPA require my SME to do?"]},
+    {id:"about",keywords:["about andrew","who are you","your firm","andrew toh","atpartner","about you","atpartner.co"],
+      answer:`I'm Andrew Toh — I run <b>Andrew Toh &amp; Partners</b>, a boutique IP &amp; corporate legal advisory in Malaysia. We work with SMEs scaling regionally, founders preparing for fundraising, and family-owned businesses building governance.
+
+Four practice pillars:
+• <b>IP Protection</b> — TMs, patents, trade secrets, copyright, employee IP.
+• <b>Legal Compliance</b> — T&amp;Cs, PDPA, employment, regulatory.
+• <b>Corporate Structure</b> — incorporation, Founders'/SHA, Holdco, ESOP.
+• <b>Business Coaching</b> — strategy, governance, investor data rooms.
+
+What you're chatting with is an AI trained on my advisory framework — useful for general questions, not a substitute for a real conversation.
+
+Direct: <b>andrew@atpartner.co</b> · WhatsApp <b>+60-13-4133139</b>. First 30 minutes free.`,
+      followups:["How do I book a call?","What are your fees?"]},
+    {id:"book",keywords:["book","appointment","schedule","call","consultation","meet","talk to andrew","speak"],
+      answer:`Three ways to reach me:
+• <b>Email</b>: andrew@atpartner.co — reply within one business day.
+• <b>WhatsApp</b>: +60-13-4133139 — fastest for quick questions.
+• <b>Diagnostic call</b>: 30 minutes, free, no obligation.
+
+If you've done the <a href="#check">8-question check</a> or the <a href="#review">Readiness Review</a>, bring your score — we'll go through it line by line.`,
+      followups:["What are your fees?","Tell me about Andrew and the firm"]},
+    {id:"fees",keywords:["fees","price","cost","how much","retainer","engagement fee","budget","quote"],
+      answer:`Honest answer: depends on scope. How I structure it so no surprises:
+
+• <b>Fixed fee</b> for defined deliverables: NDA template (RM 1,500–3,000), Founders' Agreement (RM 3,000–6,000), SHA (RM 8,000–25,000), TM filing (RM 1,500–2,500/class), ESOP (RM 15,000–35,000). Quote in writing before we start.
+• <b>Retainer</b>: ongoing clients, RM 5,000–15,000/month, defined hours.
+• <b>Project fee</b>: fundraising, M&amp;A, restructuring — milestone-based.
+• <b>Hourly</b>: only for unscoped work. Rates disclosed upfront.
+
+First <b>30-minute call is free</b>. Written engagement letter with fee, scope, timeline before any work. No surprise invoices.`,
+      followups:["How do I book a call?","Tell me about Andrew and the firm"]},
+    {id:"hello",keywords:["hi","hello","hey","hai","good morning","good afternoon","good evening","greetings"],
+      answer:`Hello — good to have you here. I'm an AI trained on Andrew's advisory framework, useful for general questions on Malaysian IP, corporate structure, employment/NDAs, and compliance.
+
+What's on your mind? Ask in plain English — "my CTO is leaving, what should I worry about?" or "can I trademark my company name?" — and I'll give you a grounded, plain-spoken answer.`,
+      followups:["How do I register a trademark in Malaysia?","Does employee IP belong to the company in Malaysia?","What is a shareholders agreement and why do I need one?"]},
+    {id:"thanks",keywords:["thank","thanks","appreciate","helpful","cheers"],
+      answer:`You're welcome. When your question gets specific (real names, real numbers, real deadlines), that's when you want a real conversation — not an AI. The 30-minute call is free: andrew@atpartner.co or WhatsApp +60-13-4133139.
+
+Anything else?`,
+      followups:["How do I book a call?","What are your fees?"]},
+    {id:"capabilities",keywords:["what can you do","what do you know","capabilities","help me","what can you help"],
+      answer:`I can answer general questions on:
+• <b>Trademarks</b> — registration, Nice classes, Madrid, costs.
+• <b>Patents</b> — MY filing, PCT, FTO.
+• <b>Copyright &amp; trade secrets</b>.
+• <b>NDAs &amp; employee IP</b> — clauses, s.27 Contracts Act.
+• <b>Corporate structure</b> — Sdn Bhd, Founders'/SHA, Holdco, ESOP.
+• <b>PDPA &amp; compliance</b>.
+• <b>DD readiness</b>.
+• <b>Fees &amp; engagement</b>.
+
+What I'm <b>not</b>: a substitute for advice on your specific matter. Ask anything — or pick a topic from the sidebar.`,
+      followups:["How do I register a trademark in Malaysia?","Does employee IP belong to the company in Malaysia?"]},
+  ];
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+  function match(text){
+    const t = text.toLowerCase();
+    let best=null, score=0;
+    for(const e of KB){
+      let s = 0;
+      for(const k of e.keywords){
+        const kk = k.toLowerCase();
+        if(t.includes(kk)){
+          s += kk.length;
+          if(new RegExp("\\b"+kk.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b").test(t)) s += 4;
+        } else {
+          const toks = kk.split(/\s+/);
+          if(toks.length>1 && toks.every(tk=>tk.length<=3||t.includes(tk))) s += 3;
+        }
+      }
+      if(s>score){ score=s; best=e; }
+    }
+    return score>=3 ? best : null;
+  }
+  function unknown(){
+    return {id:"unknown",answer:`I want to give you a useful answer, but I'm not 100% sure I understood — let me check.
+
+I might be best with topics in:
+• <b>Trademarks</b>, <b>patents</b>, <b>copyright</b>
+• <b>Employee IP, NDAs, non-compete</b>
+• <b>Sdn Bhd, Founders'/SHA, Holdco, ESOP</b>
+• <b>PDPA &amp; DD readiness</b>
+
+Could you rephrase, or pick one of these? If it's genuinely outside scope — andrew@atpartner.co or WhatsApp +60-13-4133139.`,
+      followups:["How do I register a trademark in Malaysia?","Tell me about Andrew and the firm"]};
+  }
+  /* renderers — write to a given stream element */
+  function bot(stream, entry, includeOpener=true){
+    let body = entry.answer;
+    if(includeOpener && !["hello","thanks","unknown","capabilities"].includes(entry.id)){
+      body = `<i style="color:var(--muted);font-style:italic">${pick(OPENERS)}</i>\n\n` + body;
+    }
+    body += `\n\n<span class="cite">${CITE}</span>`;
+    const m = document.createElement("div"); m.className="msg bot";
+    let chips = "";
+    if(entry.followups && entry.followups.length){
+      chips = `<div class="chips">${entry.followups.map(f=>`<button class="chip" data-fu="${escAttr(f)}">${esc(f)}</button>`).join("")}</div>`;
+    }
+    m.innerHTML = `<div class="av-sm">⚖️</div><div class="bubble">${body}${chips}</div>`;
+    stream.appendChild(m);
+    m.querySelectorAll("[data-fu]").forEach(c=>c.addEventListener("click",()=>ask(stream, c.getAttribute("data-fu"))));
+    stream.scrollTop = stream.scrollHeight;
+  }
+  function user(stream, text){
+    const m = document.createElement("div"); m.className="msg user";
+    m.innerHTML = `<div class="av-sm">YOU</div><div class="bubble">${esc(text)}</div>`;
+    stream.appendChild(m); stream.scrollTop = stream.scrollHeight;
+  }
+  function typing(stream){
+    const m = document.createElement("div"); m.className="msg bot"; m.dataset.typing="1";
+    m.innerHTML = `<div class="av-sm">⚖️</div><div class="typing"><span></span><span></span><span></span></div>`;
+    stream.appendChild(m); stream.scrollTop = stream.scrollHeight; return m;
+  }
+  function ask(stream, text){
+    text = (text||"").trim(); if(!text) return;
+    user(stream, text);
+    const t = typing(stream);
+    const delay = 500 + Math.min(1200, text.length*15);
+    setTimeout(()=>{
+      t.remove();
+      const hit = match(text);
+      bot(stream, hit||unknown(), Boolean(hit));
+    }, delay);
+  }
+  function greet(stream, opts={}){
+    const card = document.createElement("div"); card.className="msg bot";
+    const big = opts.big;
+    card.innerHTML = `<div class="av-sm">⚖️</div>
+      <div class="greet-card" style="${big?'':'padding:14px'}">
+        <span class="pill">AI Legal Assistant · Andrew Toh</span>
+        <h4${big?' style="font-size:18px;margin:10px 0 6px"':""}>Hello — what can I help you understand today?</h4>
+        <p>Ask in plain English about Malaysian IP, employment IP, corporate structure or compliance. For your specific matter, the 30-min call with Andrew is free.</p>
+        <div class="quick">
+          <button data-q="How do I register a trademark in Malaysia?">🛡️ TM registration</button>
+          <button data-q="Does employee IP automatically belong to the company in Malaysia?">👤 Employee IP</button>
+          <button data-q="What is a shareholders agreement and why do I need one?">📑 SHA</button>
+          <button data-q="What does PDPA require my SME to do?">🔒 PDPA</button>
+          ${big?`<button data-q="How do I get my company investor-ready for due diligence?">📂 DD ready</button><button data-q="What are your fees?">💵 Fees</button>`:""}
+        </div>
+      </div>`;
+    stream.appendChild(card);
+    card.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>ask(stream, b.getAttribute("data-q"))));
+  }
+
+  /* ===== Floating widget ===== */
+  let miniInit = false;
+  function openMini(){
+    $("#chatOverlay").classList.add("on");
+    if(!miniInit){
+      miniInit = true;
+      greet($("#miniStream"));
+      $("#miniForm").addEventListener("submit",e=>{
+        e.preventDefault();
+        ask($("#miniStream"), $("#miniInput").value);
+        $("#miniInput").value=""; autoSize($("#miniInput"));
+      });
+      $("#miniInput").addEventListener("keydown",e=>{
+        if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); $("#miniForm").requestSubmit(); }
+      });
+      $("#miniInput").addEventListener("input",()=>autoSize($("#miniInput")));
+      setTimeout(()=>$("#miniInput").focus(), 100);
+    }
+  }
+  function closeMini(){ $("#chatOverlay").classList.remove("on"); }
+  function autoSize(el){ el.style.height="auto"; el.style.height=Math.min(120,el.scrollHeight)+"px"; }
+  $("#chatFab").addEventListener("click",openMini);
+  $("#chatClose").addEventListener("click",closeMini);
+  $("#chatOverlay").addEventListener("click",e=>{ if(e.target===$("#chatOverlay")) closeMini(); });
+
+  /* ===== Full chat view ===== */
+  let fullInit = false;
+  function initFull(){
+    if(fullInit) return; fullInit=true;
+    // sidebar topics
+    const topics = [
+      ["Quick topics",[
+        ["🛡️ Register a trademark","How do I register a trademark in Malaysia?"],
+        ["🌏 Madrid Protocol","What is the Madrid Protocol and should I use it?"],
+        ["🏷️ Nice Class","What Nice Class should I file my trademark in?"],
+        ["💰 TM costs","How much does it cost to file a trademark in Malaysia?"],
+      ]],
+      ["Patents",[
+        ["🔬 Patent in Malaysia","How do I file a patent in Malaysia?"],
+        ["🌍 PCT national phase","What is PCT national phase?"],
+        ["🧭 FTO opinion","What is a freedom-to-operate opinion?"],
+      ]],
+      ["Employees & NDAs",[
+        ["👤 Employee IP","Does employee IP automatically belong to the company in Malaysia?"],
+        ["📜 NDA essentials","What clauses should an NDA contain in Malaysia?"],
+        ["⚖️ Non-compete","Are non-compete clauses enforceable in Malaysia?"],
+      ]],
+      ["Corporate",[
+        ["🏛️ Sdn Bhd","How do I incorporate a Sdn Bhd properly?"],
+        ["🤝 Founders' Agreement","What is a founders agreement?"],
+        ["📑 SHA","What is a shareholders agreement and why do I need one?"],
+        ["🏢 Holdco","Should I set up a Holdco?"],
+        ["🎁 ESOP","What is an ESOP and how do I implement one?"],
+      ]],
+      ["Compliance & deals",[
+        ["🔒 PDPA","What does PDPA require my SME to do?"],
+        ["📂 DD readiness","How do I get my company investor-ready for due diligence?"],
+      ]],
+      ["About",[
+        ["👤 About Andrew","Tell me about Andrew and the firm"],
+        ["📅 Book a call","How do I book a call?"],
+        ["💵 Fees","What are your fees?"],
+      ]],
+    ];
+    $("#chatSidebar").innerHTML = topics.map(([head,items])=>`
+      <h3 style="font-size:10.5px;letter-spacing:1.3px;color:var(--gold-soft);text-transform:uppercase;margin:8px 6px 6px;font-weight:600">${head}</h3>
+      ${items.map(([l,q])=>`<button class="t" data-q="${escAttr(q)}" style="background:transparent;border:1px solid transparent;color:var(--text);width:100%;text-align:left;padding:8px 11px;border-radius:8px;font-size:12.5px;margin-bottom:3px;display:block">${esc(l)}</button>`).join("")}
+    `).join("");
+    $$("#chatSidebar .t").forEach(b=>{
+      b.addEventListener("mouseenter",()=>{b.style.background="rgba(134,193,134,.08)";b.style.borderColor="rgba(134,193,134,.15)";});
+      b.addEventListener("mouseleave",()=>{b.style.background="transparent";b.style.borderColor="transparent";});
+      b.addEventListener("click",()=>ask($("#fullStream"), b.getAttribute("data-q")));
+    });
+    greet($("#fullStream"), {big:true});
+    $("#fullForm").addEventListener("submit",e=>{
+      e.preventDefault();
+      ask($("#fullStream"), $("#fullInput").value);
+      $("#fullInput").value=""; autoSize($("#fullInput"));
+    });
+    $("#fullInput").addEventListener("keydown",e=>{
+      if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); $("#fullForm").requestSubmit(); }
+    });
+    $("#fullInput").addEventListener("input",()=>autoSize($("#fullInput")));
+  }
+  return {initFull, openMini};
+})();
+
+/* ===================== MODULE: LEAD CAPTURE + PDF (html2pdf.js) ===================== */
+const LeadCapture = (()=>{
+  /* Endpoint placeholder — replace with your Google Apps Script Web App URL when ready.
+     Until then, the page still works: PDF downloads locally and a mailto fallback opens. */
+  const ENDPOINT = ""; // e.g. "https://script.google.com/macros/s/AKfycb…/exec"
+
+  function buildHTML(toolLabel){
+    return `<div class="lead-capture" data-tool="${toolLabel}">
+      <span class="pill" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);color:#dbeafe">📩 Get your report</span>
+      <h3>Get a PDF copy of your score and recommended actions</h3>
+      <p class="sub">Enter your email and we'll send you a clean PDF copy of this report. Andrew will also receive a copy so he can reach out if you'd like a free 30-minute follow-up call. No spam, no list.</p>
+      <div class="lc-form">
+        <div class="lc-grid">
+          <div><label>Your name</label><input class="lc-name" type="text" placeholder="Jane Tan"/></div>
+          <div><label>Email address *</label><input class="lc-email" type="email" required placeholder="jane@company.com"/></div>
+          <div><label>Company</label><input class="lc-company" type="text" placeholder="ACME Sdn Bhd"/></div>
+          <div><label>Phone / WhatsApp (optional)</label><input class="lc-phone" type="tel" placeholder="+60 12 345 6789"/></div>
+        </div>
+        <div class="lc-actions">
+          <button type="button" class="lc-submit">📩 Email my report &amp; download PDF</button>
+          <button type="button" class="lc-skip">Just download — no email</button>
+        </div>
+        <div class="lc-consent">By submitting, you consent to Andrew Toh &amp; Partners storing your responses for the purpose of providing this assessment and contacting you about your matter. We don't share your data. <a href="mailto:andrew@atpartner.co">Questions?</a></div>
+      </div>
+      <div class="lc-success">
+        <b style="color:#a7f3d0">✓ All done.</b> Your PDF report has downloaded to your device, and a copy has been sent to your email. Andrew will be in touch within one business day if any of your gaps need a deeper look.<br/><br/>
+        <a href="mailto:andrew@atpartner.co?subject=Follow-up%20on%20my%20IP%20assessment" style="display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:8px 16px;border-radius:8px;color:#fff;text-decoration:none;font-size:13px;margin-top:6px">📅 Book a free 30-min call →</a>
+      </div>
+    </div>`;
+  }
+
+  async function generatePDF(resultEl, filename){
+    if(typeof html2pdf === "undefined"){
+      alert("PDF library still loading — please try again in a moment.");
+      return null;
+    }
+    resultEl.classList.add("pdf-mode");
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: filename,
+      image: { type: "jpeg", quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", logging: false, windowWidth: 1100 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["css", "legacy"] }
+    };
+    try{
+      const worker = html2pdf().set(opt).from(resultEl);
+      // Save to user's device AND return the PDF blob for upload
+      const pdfBlob = await worker.outputPdf("blob");
+      // Trigger download
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+      return pdfBlob;
+    }finally{
+      resultEl.classList.remove("pdf-mode");
+    }
+  }
+
+  async function blobToBase64(blob){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onloadend = ()=>resolve(String(r.result).split(",")[1]); // strip data: prefix
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  async function postToEndpoint(payload){
+    if(!ENDPOINT) return { ok:false, reason:"no_endpoint" };
+    try{
+      await fetch(ENDPOINT, {
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"text/plain"},
+        body: JSON.stringify(payload)
+      });
+      return { ok:true };
+    }catch(e){
+      return { ok:false, reason:String(e) };
+    }
+  }
+
+  function mailtoFallback(payload){
+    const subject = encodeURIComponent(`New ${payload.tool} submission — ${payload.clientName||"Anonymous"} (${payload.score||"?"}%)`);
+    const body = encodeURIComponent(
+`New ${payload.tool} submission received via atpartner.co
+
+Name: ${payload.clientName||"—"}
+Email: ${payload.clientEmail||"—"}
+Company: ${payload.clientCompany||"—"}
+Phone: ${payload.clientPhone||"—"}
+Tool: ${payload.tool}
+Score: ${payload.score||"—"}%
+Band: ${payload.band||"—"}
+Submitted: ${new Date().toLocaleString()}
+
+— Raw answers —
+${JSON.stringify(payload.answers||{}, null, 2)}
+`);
+    return `mailto:andrew@atpartner.co?subject=${subject}&body=${body}`;
+  }
+
+  /* Mount the lead-capture form below a result element */
+  function mount(opts){
+    /* opts: { container, resultEl, toolName, toolLabel, fileBase, getPayload } */
+    const wrap = document.createElement("div");
+    wrap.innerHTML = buildHTML(opts.toolLabel);
+    opts.container.appendChild(wrap.firstElementChild);
+    const lc = opts.container.querySelector(".lead-capture");
+    const submitBtn = lc.querySelector(".lc-submit");
+    const skipBtn = lc.querySelector(".lc-skip");
+
+    async function doSubmit(withEmail){
+      const name = lc.querySelector(".lc-name").value.trim();
+      const email = lc.querySelector(".lc-email").value.trim();
+      const company = lc.querySelector(".lc-company").value.trim();
+      const phone = lc.querySelector(".lc-phone").value.trim();
+      if(withEmail){
+        if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+          alert("Please enter a valid email address."); return;
+        }
+      }
+      submitBtn.disabled = true; skipBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="lc-spinner"></span> Generating PDF…`;
+      try{
+        const ts = new Date().toISOString().slice(0,10);
+        const filename = `${opts.fileBase}-${(company||name||"client").toLowerCase().replace(/[^a-z0-9]+/g,"-")}-${ts}.pdf`;
+        const pdfBlob = await generatePDF(opts.resultEl, filename);
+
+        const basePayload = opts.getPayload();
+        const payload = {
+          ...basePayload,
+          tool: opts.toolName,
+          clientName: name, clientEmail: email, clientCompany: company, clientPhone: phone,
+          submittedAt: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+        };
+
+        if(withEmail && pdfBlob){
+          try{
+            const pdfBase64 = await blobToBase64(pdfBlob);
+            payload.pdfBase64 = pdfBase64;
+            payload.pdfFilename = filename;
+          }catch(e){ /* base64 failed — proceed without */ }
+        }
+
+        const res = await postToEndpoint(payload);
+        if(!res.ok){
+          // Endpoint not configured yet — open mailto draft as fallback (only if user wanted email)
+          if(withEmail){
+            window.open(mailtoFallback(payload), "_blank");
+          }
+        }
+        lc.classList.add("done");
+        // If no endpoint and no email, tweak success message
+        if(!withEmail){
+          lc.querySelector(".lc-success").innerHTML =
+            `<b style="color:#a7f3d0">✓ Done.</b> Your PDF report has downloaded to your device.<br/><br/>
+            <a href="mailto:andrew@atpartner.co?subject=Follow-up%20on%20my%20IP%20assessment" style="display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:8px 16px;border-radius:8px;color:#fff;text-decoration:none;font-size:13px;margin-top:6px">📅 Book a free 30-min call →</a>`;
+        }
+      }catch(e){
+        console.error(e);
+        alert("Something went wrong generating the PDF. Please try again, or take a screenshot and email andrew@atpartner.co.");
+        submitBtn.disabled = false; skipBtn.disabled = false;
+        submitBtn.innerHTML = `📩 Email my report &amp; download PDF`;
+      }
+    }
+
+    submitBtn.addEventListener("click", ()=>doSubmit(true));
+    skipBtn.addEventListener("click", ()=>doSubmit(false));
+  }
+
+  return { mount, generatePDF };
+})();
+
+// re-apply route now that all modules loaded (some views depend on init at first show)
+applyHash();
+</script>
+</body>
+</html>
