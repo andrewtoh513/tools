@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Will Generator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6fa;
+    color: #1f2a44;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: #fff;
+    padding: 28px 24px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 26px; }
+  header p { margin: 6px 0 0; opacity: 0.9; font-size: 14px; }
+  .container { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  }
+  .tab {
+    flex: 1;
+    min-width: 140px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    background: #eef2f7;
+    border-right: 1px solid #d9dee6;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    transition: background .15s;
+  }
+  .tab:last-child { border-right: none; }
+  .tab.active { background: #1e3a8a; color: #fff; }
+  .tab:hover:not(.active) { background: #dbe3ee; }
+  .panel {
+    background: #fff;
+    padding: 28px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    display: none;
+  }
+  .panel.active { display: block; }
+  h2 { margin-top: 0; color: #1e3a8a; font-size: 20px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 12px 0 5px;
+    color: #334155;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+    gap: 10px;
+  }
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: 0.9; }
+  .btn-primary { background: #1e3a8a; color: #fff; }
+  .btn-secondary { background: #e2e8f0; color: #1f2a44; }
+  .btn-success { background: #059669; color: #fff; }
+  .add-btn {
+    background: #f1f5f9;
+    color: #1e3a8a;
+    border: 1px dashed #94a3b8;
+    padding: 8px 14px;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .entry {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 12px;
+    position: relative;
+  }
+  .remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .checkbox-row input { width: auto; }
+  .checkbox-row label { margin: 0; }
+  .hint { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .sum-btn {
+    background: #ede9fe; color: #6d28d9;
+    border: 1px solid #c4b5fd; border-radius: 12px;
+    padding: 2px 9px; font-size: 11px; font-weight: 600;
+    cursor: pointer; margin-left: 8px; vertical-align: middle;
+  }
+  .sum-btn:hover { background: #ddd6fe; }
+  #output {
+    display: none;
+    background: #fff;
+    padding: 40px;
+    margin-top: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    line-height: 1.7;
+    font-family: Georgia, serif;
+  }
+  #output h1 { text-align: center; color: #1e3a8a; }
+  #output h3 { color: #1e3a8a; margin-top: 28px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+  #output ol, #output ul { padding-left: 22px; }
+  .sig-block { margin-top: 60px; }
+  .sig-line { border-top: 1px solid #000; width: 280px; margin-top: 40px; padding-top: 4px; font-size: 13px; }
+  .actions-bar { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+  @media print {
+    header, .tabs, .panel, .actions-bar, .nav-row, #chatBtn, #chatBox { display: none !important; }
+    #output { box-shadow: none; padding: 0; }
+    body { background: #fff; }
+  }
+
+  /* AI Chat Widget */
+  #chatBtn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: #fff;
+    border: none;
+    box-shadow: 0 6px 20px rgba(30,58,138,.4);
+    cursor: pointer;
+    font-size: 26px;
+    z-index: 999;
+    transition: transform .2s;
+  }
+  #chatBtn:hover { transform: scale(1.08); }
+  #chatBox {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    height: 520px;
+    max-height: calc(100vh - 130px);
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 999;
+  }
+  #chatBox.open { display: flex; }
+  #chatHeader {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: #fff;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #chatHeader h3 { margin: 0; font-size: 15px; }
+  #chatHeader small { opacity: .85; font-size: 11px; }
+  #chatClose {
+    background: transparent;
+    color: #fff;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  #chatLog {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    background: #f8fafc;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .msg { margin-bottom: 12px; display: flex; }
+  .msg.bot .bubble { background: #fff; color: #1f2a44; border: 1px solid #e2e8f0; }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .bubble { background: #1e3a8a; color: #fff; }
+  .bubble {
+    padding: 9px 13px;
+    border-radius: 14px;
+    max-width: 82%;
+    white-space: pre-wrap;
+  }
+  .bubble a { color: inherit; text-decoration: underline; }
+  .chips {
+    padding: 8px 14px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: #f8fafc;
+  }
+  .chip {
+    background: #e0e7ff;
+    color: #1e3a8a;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 14px;
+    font-size: 11.5px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .chip:hover { background: #c7d2fe; }
+  #chatInputRow {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+    gap: 8px;
+  }
+  #chatInput {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    font-size: 13.5px;
+    outline: none;
+  }
+  #chatInput:focus { border-color: #3b82f6; }
+  #chatSend {
+    background: #1e3a8a;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .typing { font-style: italic; color: #94a3b8; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Will Generator</h1>
+  <p>Complete each section to generate your last will and testament</p>
+  <p style="font-size:12px"><a href="will_generator_voice.html" style="color:#fff;text-decoration:underline">🎤 Switch to Voice Mode →</a></p>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" data-tab="personal">1. Personal Details</div>
+    <div class="tab" data-tab="custody">2. Custody</div>
+    <div class="tab" data-tab="assets">3. Current Assets</div>
+    <div class="tab" data-tab="beneficiaries">4. Beneficiaries</div>
+    <div class="tab" data-tab="trust">5. Trust</div>
+  </div>
+
+  <!-- SECTION 1: PERSONAL DETAILS -->
+  <div class="panel active" id="panel-personal">
+    <h2>Personal Details</h2>
+    <div class="row">
+      <div>
+        <label>Full Legal Name *</label>
+        <input id="fullName" type="text" />
+      </div>
+      <div>
+        <label>NRIC / Passport No. *</label>
+        <input id="nric" type="text" />
+      </div>
+      <div>
+        <label>Gender</label>
+        <select id="gender">
+          <option value="">--Select--</option>
+          <option>Male</option>
+          <option>Female</option>
+        </select>
+      </div>
+      <div>
+        <label>Date of Birth</label>
+        <input id="dob" type="date" />
+      </div>
+      <div>
+        <label>Nationality</label>
+        <input id="nationality" type="text" />
+      </div>
+      <div>
+        <label>Religion</label>
+        <select id="religion">
+          <option value="">--Select--</option>
+          <option>Non-Muslim</option>
+          <option>Muslim</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Marital Status</label>
+        <select id="marital">
+          <option value="">--Select--</option>
+          <option>Single</option>
+          <option>Married</option>
+          <option>Divorced</option>
+          <option>Widowed</option>
+        </select>
+      </div>
+      <div>
+        <label>Occupation</label>
+        <input id="occupation" type="text" />
+      </div>
+    </div>
+    <label>Residential Address</label>
+    <textarea id="address"></textarea>
+    <div class="row">
+      <div>
+        <label>Contact No.</label>
+        <input id="contact" type="text" />
+      </div>
+      <div>
+        <label>Email Address</label>
+        <input id="email" type="email" />
+      </div>
+    </div>
+    <label>Spouse Name (if applicable)</label>
+    <input id="spouseName" type="text" />
+    <div class="nav-row">
+      <span></span>
+      <button class="btn-primary" onclick="goTab('custody')">Next →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: CUSTODY -->
+  <div class="panel" id="panel-custody">
+    <h2>Custody of Minor Children</h2>
+    <p class="hint">Add each minor child (under 18) and nominate a guardian.</p>
+    <div id="childrenList"></div>
+    <button class="add-btn" onclick="addChild()">+ Add Child</button>
+
+    <label style="margin-top:20px">Primary Guardian — Full Name</label>
+    <input id="guardianName" type="text" />
+    <div class="row">
+      <div>
+        <label>Guardian NRIC / Passport</label>
+        <input id="guardianNric" type="text" />
+      </div>
+      <div>
+        <label>Relationship to You</label>
+        <input id="guardianRelation" type="text" />
+      </div>
+    </div>
+    <label>Alternate Guardian (if primary is unable/unwilling)</label>
+    <input id="altGuardian" type="text" />
+    <label>Custody Instructions / Wishes <button type="button" class="sum-btn" onclick="summariseField('custodyNotes')">✨ Summarise</button></label>
+    <textarea id="custodyNotes" placeholder="e.g., education preferences, religion, location of residence..."></textarea>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goTab('personal')">← Back</button>
+      <button class="btn-primary" onclick="goTab('assets')">Next →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ASSETS -->
+  <div class="panel" id="panel-assets">
+    <h2>Current Assets</h2>
+    <p class="hint">List all significant assets. You can add multiple entries per category.</p>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:18px">Real Property</h3>
+    <div id="realPropList"></div>
+    <button class="add-btn" onclick="addAsset('realProp', ['Address','Estimated Value'])">+ Add Property</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:18px">Bank Accounts</h3>
+    <div id="bankList"></div>
+    <button class="add-btn" onclick="addAsset('bank', ['Bank Name','Account No.','Balance'])">+ Add Account</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:18px">Investments</h3>
+    <div id="invList"></div>
+    <button class="add-btn" onclick="addAsset('inv', ['Description','Value'])">+ Add Investment</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:18px">Business Interests</h3>
+    <div id="bizList"></div>
+    <button class="add-btn" onclick="addAsset('biz', ['Company','Shareholding %','Value'])">+ Add Business</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:18px">Vehicles & Personal Assets</h3>
+    <div id="vehList"></div>
+    <button class="add-btn" onclick="addAsset('veh', ['Description','Value'])">+ Add Item</button>
+
+    <label style="margin-top:20px">Foreign Assets (if any) <button type="button" class="sum-btn" onclick="summariseField('foreignAssets')">✨ Summarise</button></label>
+    <textarea id="foreignAssets"></textarea>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:18px">Outstanding Liabilities</h3>
+    <p class="hint">For each debt, state <strong>who handles it</strong> (default: the Executor) and <strong>which assets</strong> should pay it.</p>
+    <div id="liabList"></div>
+    <button class="add-btn" onclick="addLiability()">+ Add Liability</button>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goTab('custody')">← Back</button>
+      <button class="btn-primary" onclick="goTab('beneficiaries')">Next →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: BENEFICIARIES -->
+  <div class="panel" id="panel-beneficiaries">
+    <h2>Beneficiaries</h2>
+    <p class="hint">Step 1 — Register every person or entity who may inherit.</p>
+    <div id="benList"></div>
+    <button class="add-btn" onclick="addBeneficiary()">+ Add Beneficiary</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:24px">Specific Asset Allocations</h3>
+    <p class="hint">Step 2 — Assign specific assets to one or more beneficiaries. Each asset must total <strong>100%</strong>.</p>
+    <div id="allocList"></div>
+    <button class="add-btn" onclick="addAllocation()">+ Add Asset Allocation</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:24px">Residuary Estate</h3>
+    <p class="hint">Step 3 — Distribute everything <em>not</em> specifically allocated above (after debts &amp; expenses are paid). Shares must total 100%.</p>
+    <div id="residList"></div>
+    <button class="add-btn" onclick="addResiduary()">+ Add Residuary Share</button>
+
+    <h3 style="color:#1e3a8a;font-size:15px;margin-top:24px">Executor</h3>
+    <p class="hint">The executor administers your estate and is granted broad powers (see generated will) to recover all assets.</p>
+    <div class="row">
+      <div>
+        <label>Executor Name</label>
+        <input id="executor" type="text" />
+      </div>
+      <div>
+        <label>Executor NRIC / Passport</label>
+        <input id="executorNric" type="text" />
+      </div>
+      <div>
+        <label>Relationship</label>
+        <input id="executorRelation" type="text" />
+      </div>
+      <div>
+        <label>Alternate Executor — Name</label>
+        <input id="altExecutor" type="text" />
+      </div>
+      <div>
+        <label>Alternate Executor — NRIC / Passport</label>
+        <input id="altExecutorNric" type="text" />
+      </div>
+      <div>
+        <label>Alternate Executor — Relationship</label>
+        <input id="altExecutorRelation" type="text" />
+      </div>
+    </div>
+
+    <label>Charitable Donations (optional) <button type="button" class="sum-btn" onclick="summariseField('charity')">✨ Summarise</button></label>
+    <textarea id="charity"></textarea>
+
+    <label>Funeral / Burial Wishes <button type="button" class="sum-btn" onclick="summariseField('funeral')">✨ Summarise</button></label>
+    <textarea id="funeral"></textarea>
+
+    <datalist id="benNames"></datalist>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goTab('assets')">← Back</button>
+      <button class="btn-primary" onclick="goTab('trust')">Next →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: TRUST -->
+  <div class="panel" id="panel-trust">
+    <h2>Trust & Estate Management</h2>
+    <div class="checkbox-row">
+      <input type="checkbox" id="createTrust" onchange="toggleTrust()" />
+      <label for="createTrust">I wish to establish a trust for the management of my assets</label>
+    </div>
+
+    <div id="trustDetails" style="display:none">
+      <div class="row">
+        <div>
+          <label>Trust Type</label>
+          <select id="trustType">
+            <option>Living Trust</option>
+            <option>Testamentary Trust</option>
+            <option>Discretionary Trust</option>
+            <option>Charitable Trust</option>
+          </select>
+        </div>
+        <div>
+          <label>Trustee — Name</label>
+          <input id="trusteeName" type="text" />
+        </div>
+        <div>
+          <label>Trustee — NRIC / Passport</label>
+          <input id="trusteeNric" type="text" />
+        </div>
+        <div>
+          <label>Trustee — Relationship</label>
+          <input id="trusteeRelation" type="text" />
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+        <label>Alternate Trustee — pre-fill from:</label>
+        <select id="altTrusteeSource" onchange="applyAltTrusteeSource()" style="margin-bottom:8px">
+          <option value="custom">Custom (enter manually)</option>
+          <option value="executor">Same as Primary Executor</option>
+          <option value="altExecutor">Same as Alternate Executor</option>
+        </select>
+        <div class="row">
+          <div>
+            <label>Alternate Trustee — Name</label>
+            <input id="altTrustee" type="text" />
+          </div>
+          <div>
+            <label>Alternate Trustee — NRIC / Passport</label>
+            <input id="altTrusteeNric" type="text" />
+          </div>
+          <div>
+            <label>Alternate Trustee — Relationship</label>
+            <input id="altTrusteeRelation" type="text" />
+          </div>
+        </div>
+      </div>
+
+      <label style="margin-top:14px">Purpose of Trust <button type="button" class="sum-btn" onclick="summariseField('trustPurpose')">✨ Summarise</button></label>
+      <textarea id="trustPurpose" placeholder="e.g., provide for children's education, ongoing care for dependent..."></textarea>
+
+      <label>Assets to be Placed in Trust <button type="button" class="sum-btn" onclick="summariseField('trustAssets')">✨ Summarise</button></label>
+      <textarea id="trustAssets"></textarea>
+
+      <label>Beneficiaries of Trust <button type="button" class="sum-btn" onclick="summariseField('trustBeneficiaries')">✨ Summarise</button></label>
+      <textarea id="trustBeneficiaries"></textarea>
+
+      <label>Duration / Conditions of Distribution <button type="button" class="sum-btn" onclick="summariseField('trustConditions')">✨ Summarise</button></label>
+      <textarea id="trustConditions" placeholder="e.g., distribute upon beneficiary reaching age 25; pay income annually..."></textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goTab('beneficiaries')">← Back</button>
+      <button class="btn-success" onclick="generateWill()">Generate Will →</button>
+    </div>
+  </div>
+
+  <div class="actions-bar" id="actions" style="display:none">
+    <button class="btn-primary" onclick="window.print()">Print / Save as PDF</button>
+    <button class="btn-secondary" onclick="document.getElementById('output').style.display='none';document.getElementById('actions').style.display='none';window.scrollTo(0,0)">Edit</button>
+  </div>
+
+  <div id="output"></div>
+
+</div>
+
+<!-- AI Chat Widget -->
+<button id="chatBtn" onclick="toggleChat()" title="Ask the Will Assistant">💬</button>
+<div id="chatBox">
+  <div id="chatHeader">
+    <div>
+      <h3>Will Assistant</h3>
+      <small>Ask me about wills, estates &amp; this form</small>
+    </div>
+    <button id="chatClose" onclick="toggleChat()">×</button>
+  </div>
+  <div id="chatLog"></div>
+  <div class="chips" id="chatChips"></div>
+  <div id="chatInputRow">
+    <input id="chatInput" type="text" placeholder="Type your question..." onkeydown="if(event.key==='Enter') sendChat()" />
+    <button id="chatSend" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+  // Tab navigation
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => goTab(t.dataset.tab));
+  });
+  function goTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+    window.scrollTo(0, 0);
+  }
+
+  // Dynamic children
+  function addChild() {
+    const list = document.getElementById('childrenList');
+    const i = list.children.length;
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+      <div class="row">
+        <div><label>Child's Full Name</label><input class="ch-name" type="text" /></div>
+        <div><label>Date of Birth</label><input class="ch-dob" type="date" /></div>
+        <div><label>NRIC / Birth Cert No.</label><input class="ch-nric" type="text" /></div>
+        <div><label>Relationship</label><input class="ch-rel" type="text" value="Child" /></div>
+      </div>`;
+    list.appendChild(div);
+  }
+
+  // Dynamic assets
+  function addAsset(prefix, fields) {
+    const list = document.getElementById(prefix + 'List');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    const inputs = fields.map(f => `<div><label>${f}</label><input class="as-${prefix}-${f.replace(/[^a-z]/gi,'')}" type="text" data-field="${f}" /></div>`).join('');
+    div.innerHTML = `
+      <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+      <div class="row">${inputs}</div>`;
+    list.appendChild(div);
+  }
+
+  // Dynamic beneficiaries
+  function addBeneficiary() {
+    const list = document.getElementById('benList');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <button class="remove-btn" onclick="this.parentElement.remove();refreshBenDatalist();">Remove</button>
+      <div class="row">
+        <div><label>Beneficiary Name</label><input class="b-name" type="text" oninput="refreshBenDatalist()" /></div>
+        <div><label>Relationship</label><input class="b-rel" type="text" /></div>
+        <div><label>NRIC / Passport</label><input class="b-nric" type="text" /></div>
+        <div><label>Alternate Beneficiary (if primary predeceases)</label><input class="b-alt" type="text" /></div>
+      </div>`;
+    list.appendChild(div);
+    refreshBenDatalist();
+  }
+
+  function refreshBenDatalist() {
+    const dl = document.getElementById('benNames');
+    if (!dl) return;
+    const names = [...document.querySelectorAll('#benList .b-name')].map(i => i.value.trim()).filter(Boolean);
+    dl.innerHTML = names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+  }
+
+  // Specific Asset Allocations
+  function addAllocation() {
+    const list = document.getElementById('allocList');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <button class="remove-btn" onclick="this.parentElement.remove()">Remove Asset</button>
+      <label>Asset Description (e.g., "House at 123 Jalan ABC", "Maybank Savings A/C 1234")</label>
+      <input class="al-asset" type="text" />
+      <div class="al-rows" style="margin-top:10px"></div>
+      <button class="add-btn" style="margin-top:8px" onclick="addAllocRow(this.parentElement)">+ Add Beneficiary Share</button>
+      <div class="al-total" style="margin-top:8px;font-size:12px;color:#64748b">Total: 0%</div>`;
+    list.appendChild(div);
+    addAllocRow(div);
+  }
+
+  function addAllocRow(allocDiv) {
+    const rows = allocDiv.querySelector('.al-rows');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1.2fr 1fr 110px 32px;gap:8px;align-items:end;margin-top:6px';
+    row.innerHTML = `
+      <div><label>Beneficiary</label><input class="al-ben" type="text" list="benNames" /></div>
+      <div><label>NRIC / Passport</label><input class="al-nric" type="text" /></div>
+      <div><label>% Share</label><input class="al-pct" type="number" min="0" max="100" step="0.01" oninput="updateAllocTotal(this)" /></div>
+      <button class="remove-btn" style="position:static;height:34px" title="Remove">×</button>`;
+    row.querySelector('.remove-btn').onclick = () => { row.remove(); updateAllocTotalForDiv(allocDiv); };
+    rows.appendChild(row);
+    updateAllocTotalForDiv(allocDiv);
+  }
+
+  function updateAllocTotal(input) {
+    const allocDiv = input.closest('.entry');
+    updateAllocTotalForDiv(allocDiv);
+  }
+  function updateAllocTotalForDiv(allocDiv) {
+    if (!allocDiv) return;
+    const pcts = [...allocDiv.querySelectorAll('.al-pct')].map(i => parseFloat(i.value) || 0);
+    const total = pcts.reduce((a,b) => a+b, 0);
+    const totalEl = allocDiv.querySelector('.al-total');
+    if (totalEl) {
+      const ok = Math.abs(total - 100) < 0.01;
+      totalEl.textContent = `Total: ${total.toFixed(2)}%${ok ? ' ✓' : ' — must equal 100%'}`;
+      totalEl.style.color = ok ? '#059669' : '#b91c1c';
+    }
+  }
+
+  // Residuary Estate
+  function addResiduary() {
+    const list = document.getElementById('residList');
+    const row = document.createElement('div');
+    row.className = 'entry';
+    row.style.cssText = 'display:grid;grid-template-columns:1.2fr 1fr 130px 80px;gap:10px;align-items:end;padding:10px';
+    row.innerHTML = `
+      <div><label>Beneficiary</label><input class="r-ben" type="text" list="benNames" /></div>
+      <div><label>NRIC / Passport</label><input class="r-nric" type="text" /></div>
+      <div><label>% of Residue</label><input class="r-pct" type="number" min="0" max="100" step="0.01" oninput="updateResidTotal()" /></div>
+      <button class="remove-btn" style="position:static;height:34px" onclick="this.parentElement.remove();updateResidTotal();">Remove</button>`;
+    list.appendChild(row);
+    ensureResidTotalEl();
+    updateResidTotal();
+  }
+  function ensureResidTotalEl() {
+    let el = document.getElementById('residTotal');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'residTotal';
+      el.style.cssText = 'margin-top:8px;font-size:12px;color:#64748b';
+      document.getElementById('residList').after(el);
+    }
+  }
+  function updateResidTotal() {
+    ensureResidTotalEl();
+    const pcts = [...document.querySelectorAll('#residList .r-pct')].map(i => parseFloat(i.value) || 0);
+    const total = pcts.reduce((a,b) => a+b, 0);
+    const el = document.getElementById('residTotal');
+    const ok = Math.abs(total - 100) < 0.01 || total === 0;
+    el.textContent = total === 0 ? '(No residuary distribution defined)' : `Residue total: ${total.toFixed(2)}%${Math.abs(total-100)<0.01 ? ' ✓' : ' — must equal 100%'}`;
+    el.style.color = ok ? '#059669' : '#b91c1c';
+  }
+
+  function toggleTrust() {
+    document.getElementById('trustDetails').style.display =
+      document.getElementById('createTrust').checked ? 'block' : 'none';
+  }
+
+  function applyAltTrusteeSource() {
+    const src = document.getElementById('altTrusteeSource').value;
+    if (src === 'custom') return;
+    const map = {
+      executor:    { n: 'executor',    i: 'executorNric',    r: 'executorRelation' },
+      altExecutor: { n: 'altExecutor', i: 'altExecutorNric', r: 'altExecutorRelation' },
+    }[src];
+    if (!map) return;
+    document.getElementById('altTrustee').value         = val(map.n);
+    document.getElementById('altTrusteeNric').value     = val(map.i);
+    document.getElementById('altTrusteeRelation').value = val(map.r);
+  }
+
+  // Helpers
+  const val = id => (document.getElementById(id)?.value || '').trim();
+  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  function collectChildren() {
+    return [...document.querySelectorAll('#childrenList .entry')].map(e => ({
+      name: e.querySelector('.ch-name').value.trim(),
+      dob: e.querySelector('.ch-dob').value.trim(),
+      nric: e.querySelector('.ch-nric').value.trim(),
+      rel: e.querySelector('.ch-rel').value.trim(),
+    })).filter(c => c.name);
+  }
+
+  function collectAssets(prefix) {
+    return [...document.querySelectorAll(`#${prefix}List .entry`)].map(e => {
+      const obj = {};
+      e.querySelectorAll('input[data-field]').forEach(i => obj[i.dataset.field] = i.value.trim());
+      return obj;
+    }).filter(a => Object.values(a).some(v => v));
+  }
+
+  function collectBeneficiaries() {
+    return [...document.querySelectorAll('#benList .entry')].map(e => ({
+      name: e.querySelector('.b-name').value.trim(),
+      rel: e.querySelector('.b-rel').value.trim(),
+      nric: e.querySelector('.b-nric').value.trim(),
+      alt: e.querySelector('.b-alt').value.trim(),
+    })).filter(b => b.name);
+  }
+
+  function collectAllocations() {
+    return [...document.querySelectorAll('#allocList .entry')].map(e => {
+      const asset = e.querySelector('.al-asset').value.trim();
+      const shares = [...e.querySelectorAll('.al-rows > div')].map(r => ({
+        ben: r.querySelector('.al-ben').value.trim(),
+        nric: (r.querySelector('.al-nric')?.value || '').trim(),
+        pct: parseFloat(r.querySelector('.al-pct').value) || 0,
+      })).filter(s => s.ben && s.pct > 0);
+      const total = shares.reduce((a,s) => a + s.pct, 0);
+      return { asset, shares, total };
+    }).filter(a => a.asset && a.shares.length);
+  }
+
+  function collectResiduary() {
+    const shares = [...document.querySelectorAll('#residList .entry')].map(r => ({
+      ben: r.querySelector('.r-ben').value.trim(),
+      nric: (r.querySelector('.r-nric')?.value || '').trim(),
+      pct: parseFloat(r.querySelector('.r-pct').value) || 0,
+    })).filter(s => s.ben && s.pct > 0);
+    const total = shares.reduce((a,s) => a + s.pct, 0);
+    return { shares, total };
+  }
+
+  // Structured Liabilities
+  function addLiability() {
+    const list = document.getElementById('liabList');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+      <div class="row">
+        <div><label>Description (creditor / type)</label><input class="lb-desc" type="text" placeholder="e.g., Maybank Home Loan A/C 12345" /></div>
+        <div><label>Outstanding Amount (RM)</label><input class="lb-amt" type="text" placeholder="e.g., 250,000" /></div>
+        <div><label>Who shall handle this debt</label><input class="lb-who" type="text" value="My Executor" /></div>
+        <div>
+          <label>Source of payment</label>
+          <select class="lb-src">
+            <option value="cash">Cash &amp; bank accounts first</option>
+            <option value="investments">Investments &amp; securities</option>
+            <option value="business">Business interests</option>
+            <option value="realProperty">Sale of real property</option>
+            <option value="secured">From the secured asset itself (mortgage / hire-purchase)</option>
+            <option value="discretion" selected>Executor's discretion (any estate asset)</option>
+          </select>
+        </div>
+      </div>`;
+    list.appendChild(div);
+  }
+
+  function collectLiabilities() {
+    return [...document.querySelectorAll('#liabList .entry')].map(e => ({
+      desc: e.querySelector('.lb-desc').value.trim(),
+      amt: e.querySelector('.lb-amt').value.trim(),
+      who: e.querySelector('.lb-who').value.trim() || 'My Executor',
+      src: e.querySelector('.lb-src').value,
+    })).filter(l => l.desc || l.amt);
+  }
+
+  const SRC_LABELS = {
+    cash: 'cash and bank accounts forming part of my estate',
+    investments: 'proceeds from realisation of my investments and securities',
+    business: 'proceeds from realisation of my business interests',
+    realProperty: 'proceeds from the sale of my real property',
+    secured: 'the secured asset itself (or its sale proceeds)',
+    discretion: 'such estate assets as my Executor in his/her absolute discretion shall determine',
+  };
+
+  /* ---------- SUMMARISER ---------- */
+  // Light, non-LLM summariser: removes fillers, collapses whitespace,
+  // and keeps the most informative sentences (by keyword density).
+  const FILLERS = /\b(basically|actually|literally|honestly|kind of|sort of|you know|i mean|like(,| )|just )\b/gi;
+  function summariseText(text, maxSentences = 4) {
+    if (!text) return '';
+    let t = text.replace(/\s+/g, ' ').replace(FILLERS, '').replace(/\s+,/g, ',').trim();
+    const sents = t.split(/(?<=[.!?])\s+/).filter(s => s.length > 0);
+    if (sents.length <= maxSentences) return t;
+    // Score by length and unique informative words
+    const stop = new Set(['the','a','an','and','or','of','to','in','on','for','is','are','was','were','be','i','my','that','this','it','with','as','at','by','from']);
+    const scored = sents.map((s, idx) => {
+      const words = s.toLowerCase().match(/[a-z]+/g) || [];
+      const informative = words.filter(w => !stop.has(w) && w.length > 3).length;
+      const positionBoost = idx < 2 ? 1.3 : 1; // intro sentences matter
+      return { s, score: informative * positionBoost };
+    });
+    const top = scored.sort((a,b) => b.score - a.score).slice(0, maxSentences);
+    // restore original order
+    return top.sort((a,b) => sents.indexOf(a.s) - sents.indexOf(b.s)).map(x => x.s).join(' ');
+  }
+
+  function summariseField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const original = el.value;
+    if (!original.trim()) return;
+    const summary = summariseText(original);
+    if (summary === original.trim()) {
+      alert('Already concise — nothing to summarise.');
+      return;
+    }
+    if (confirm(`Original (${original.length} chars):\n\n${original}\n\n— — — — —\n\nSuggested summary (${summary.length} chars):\n\n${summary}\n\nReplace with summary?`)) {
+      el.value = summary;
+    }
+  }
+
+  function generateWill() {
+    const name = val('fullName') || '[NAME]';
+    const nric = val('nric') || '[NRIC]';
+    const addr = val('address') || '[ADDRESS]';
+    const today = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+
+    const children = collectChildren();
+    const realProp = collectAssets('realProp');
+    const bank = collectAssets('bank');
+    const inv = collectAssets('inv');
+    const biz = collectAssets('biz');
+    const veh = collectAssets('veh');
+    const bens = collectBeneficiaries();
+    const allocs = collectAllocations();
+    const residue = collectResiduary();
+    const useTrust = document.getElementById('createTrust').checked;
+
+    // Validation warnings
+    const badAllocs = allocs.filter(a => Math.abs(a.total - 100) > 0.01);
+    if (badAllocs.length) {
+      if (!confirm(`Warning: ${badAllocs.length} asset allocation(s) do not total 100%:\n\n${badAllocs.map(a => `• ${a.asset} (${a.total.toFixed(2)}%)`).join('\n')}\n\nGenerate anyway?`)) return;
+    }
+    if (residue.shares.length && Math.abs(residue.total - 100) > 0.01) {
+      if (!confirm(`Warning: Residuary estate totals ${residue.total.toFixed(2)}% (should be 100%). Generate anyway?`)) return;
+    }
+
+    let html = `<h1>LAST WILL AND TESTAMENT</h1>
+      <p style="text-align:center"><strong>OF ${esc(name).toUpperCase()}</strong></p>
+      <p style="text-align:center;font-style:italic">This is the Last Will and Testament of <strong>${esc(name)}</strong> ("the Testator") as of <strong>${today}</strong>.</p>
+      <p>I, <strong>${esc(name)}</strong>, holder of NRIC/Passport No. <strong>${esc(nric)}</strong>, of <strong>${esc(addr)}</strong>, being of sound mind and memory, do hereby make, publish, and declare this to be my Last Will and Testament, revoking all wills and codicils previously made by me.</p>
+
+      <h3>1. Personal Particulars</h3>
+      <ul>
+        <li>Full Name: ${esc(name)}</li>
+        <li>NRIC / Passport: ${esc(nric)}</li>
+        <li>Date of Birth: ${esc(val('dob')) || '—'}</li>
+        <li>Nationality: ${esc(val('nationality')) || '—'}</li>
+        <li>Marital Status: ${esc(val('marital')) || '—'}${val('spouseName') ? ', Spouse: ' + esc(val('spouseName')) : ''}</li>
+        <li>Occupation: ${esc(val('occupation')) || '—'}</li>
+      </ul>`;
+
+    // Custody
+    html += `<h3>2. Custody &amp; Guardianship</h3>`;
+    if (children.length) {
+      html += `<p>I have the following minor children:</p><ol>`;
+      children.forEach(c => {
+        html += `<li>${esc(c.name)} (DOB: ${esc(c.dob) || '—'}, ID: ${esc(c.nric) || '—'})</li>`;
+      });
+      html += `</ol>`;
+      if (val('guardianName')) {
+        html += `<p>I appoint <strong>${esc(val('guardianName'))}</strong>${val('guardianRelation') ? ' (' + esc(val('guardianRelation')) + ')' : ''}, NRIC/Passport ${esc(val('guardianNric')) || '—'}, as the Guardian of my minor children.</p>`;
+      }
+      if (val('altGuardian')) {
+        html += `<p>If the primary Guardian is unable or unwilling to act, I appoint <strong>${esc(val('altGuardian'))}</strong> as the Alternate Guardian.</p>`;
+      }
+      if (val('custodyNotes')) {
+        html += `<p><em>Special instructions:</em> ${esc(val('custodyNotes'))}</p>`;
+      }
+    } else {
+      html += `<p>I have no minor children at the date of this Will.</p>`;
+    }
+
+    // Assets
+    html += `<h3>3. Inventory of Assets</h3>`;
+    const block = (title, arr) => {
+      if (!arr.length) return '';
+      let s = `<p><strong>${title}:</strong></p><ul>`;
+      arr.forEach(a => s += `<li>${Object.entries(a).map(([k,v]) => `${esc(k)}: ${esc(v) || '—'}`).join('; ')}</li>`);
+      return s + '</ul>';
+    };
+    html += block('Real Property', realProp);
+    html += block('Bank Accounts', bank);
+    html += block('Investments', inv);
+    html += block('Business Interests', biz);
+    html += block('Vehicles &amp; Personal Property', veh);
+    if (val('foreignAssets')) html += `<p><strong>Foreign Assets:</strong> ${esc(val('foreignAssets'))}</p>`;
+    const liabs = collectLiabilities();
+    if (!realProp.length && !bank.length && !inv.length && !biz.length && !veh.length && !val('foreignAssets')) {
+      html += `<p>The full inventory of my estate shall be ascertained by my Executor at the time of administration.</p>`;
+    }
+
+    // Payment of Debts, Funeral Expenses & Liabilities (FIRST charge on the estate)
+    html += `<h3>4. Payment of Debts, Funeral Expenses and Liabilities</h3>
+      <p>I <strong>DIRECT</strong> my Executor, as soon as is reasonably practicable after my death, to pay out of my estate all of my just debts, funeral and testamentary expenses, taxes, duties, and any other liabilities owing by me at the time of my death (collectively, the "<strong>Liabilities</strong>").</p>
+      <p>The Liabilities shall be a <strong>first charge</strong> on the whole of my estate and shall be discharged out of <em>all</em> of my assets (both those specifically bequeathed and the residue), in the following default order so far as the law permits and subject to any specific direction below:</p>
+      <ol>
+        <li>from any cash held in bank accounts forming part of my estate;</li>
+        <li>from the proceeds of sale of any investments, securities and movable property;</li>
+        <li>from the proceeds of sale of any business interests not specifically bequeathed;</li>
+        <li>and finally, if necessary, from the proceeds of sale of any real property, including assets that have been specifically bequeathed, in which case the affected beneficiary shall receive only the net balance (if any) after such Liabilities are satisfied.</li>
+      </ol>`;
+
+    if (liabs.length) {
+      html += `<p><strong>Schedule of known liabilities and directions for payment:</strong></p>`;
+      html += `<table style="width:100%;border-collapse:collapse;margin:6px 0 12px"><thead><tr style="background:#eef2f7">
+        <th style="text-align:left;padding:6px;border:1px solid #cbd5e1">Liability</th>
+        <th style="text-align:right;padding:6px;border:1px solid #cbd5e1;width:120px">Amount (RM)</th>
+        <th style="text-align:left;padding:6px;border:1px solid #cbd5e1;width:160px">Handled by</th>
+        <th style="text-align:left;padding:6px;border:1px solid #cbd5e1">Source of payment</th>
+      </tr></thead><tbody>`;
+      liabs.forEach(l => {
+        html += `<tr>
+          <td style="padding:6px;border:1px solid #cbd5e1">${esc(l.desc) || '—'}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right">${esc(l.amt) || '—'}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1">${esc(l.who)}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1">${esc(SRC_LABELS[l.src] || 'Executor\'s discretion')}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      html += `<p>Where the source of payment specified above is insufficient, my Executor shall apply the remaining Liabilities against the next available class of asset in the default order set out above.</p>`;
+    } else {
+      html += `<p>To the best of my knowledge there are no material outstanding liabilities at the date of this Will. Any liabilities subsequently discovered shall be paid by my Executor in accordance with the default order set out above.</p>`;
+    }
+    html += `<p>My Executor shall have full and absolute discretion in determining the manner, order and timing of payment of the Liabilities and in selecting which assets to apply or realise for that purpose, acting reasonably and in the best interests of my estate as a whole. No Beneficiary shall be entitled to receive any distribution of an asset until the Liabilities chargeable against that asset (or against the estate generally) have been duly discharged.</p>`;
+
+    // Beneficiaries register
+    html += `<h3>5. Beneficiaries</h3>`;
+    if (bens.length) {
+      html += `<p>The persons and entities named below ("<strong>Beneficiaries</strong>") are the intended recipients of my estate:</p><ol>`;
+      bens.forEach(b => {
+        html += `<li><strong>${esc(b.name)}</strong>${b.rel ? ' (' + esc(b.rel) + ')' : ''}${b.nric ? ', NRIC/Passport ' + esc(b.nric) : ''}`;
+        if (b.alt) html += `; alternate: <strong>${esc(b.alt)}</strong>`;
+        html += `.</li>`;
+      });
+      html += `</ol><p>Wherever a Beneficiary is named below and an alternate is stated, if that Beneficiary predeceases me, fails to survive me by thirty (30) days, disclaims, or is otherwise unable to take, his/her/its share shall pass to the named alternate; failing which, that share shall fall into and form part of my residuary estate.</p>`;
+    } else {
+      html += `<p>No specific beneficiaries are named; my estate shall be distributed pursuant to the laws of intestate succession.</p>`;
+    }
+
+    // Specific Bequests (asset-by-asset percentage allocations)
+    html += `<h3>6. Specific Bequests</h3>`;
+    if (allocs.length) {
+      html += `<p>Subject always to Clause 4 (Payment of Liabilities), I give, devise and bequeath the following specific assets as detailed below:</p>`;
+      allocs.forEach((a, idx) => {
+        html += `<p><strong>6.${idx+1} ${esc(a.asset)}</strong></p>`;
+        html += `<table style="width:100%;border-collapse:collapse;margin:6px 0 12px"><thead><tr style="background:#eef2f7"><th style="text-align:left;padding:6px;border:1px solid #cbd5e1">Beneficiary</th><th style="text-align:left;padding:6px;border:1px solid #cbd5e1;width:170px">NRIC / Passport</th><th style="text-align:right;padding:6px;border:1px solid #cbd5e1;width:110px">Share (%)</th></tr></thead><tbody>`;
+        a.shares.forEach(s => {
+          html += `<tr><td style="padding:6px;border:1px solid #cbd5e1">${esc(s.ben)}</td><td style="padding:6px;border:1px solid #cbd5e1">${esc(s.nric) || '—'}</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">${s.pct.toFixed(2)}%</td></tr>`;
+        });
+        html += `<tr style="font-weight:bold;background:#f8fafc"><td style="padding:6px;border:1px solid #cbd5e1" colspan="2">Total</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">${a.total.toFixed(2)}%</td></tr>`;
+        html += `</tbody></table>`;
+      });
+      html += `<p>Where an asset is allocated to more than one Beneficiary, the Beneficiaries shall hold the asset as tenants-in-common in the proportions stated, with full power to my Executor (acting reasonably) to sell the asset and distribute the net proceeds in those same proportions if a partition in specie is impractical.</p>`;
+    } else {
+      html += `<p>No specific asset bequests are made; all assets shall form part of my residuary estate.</p>`;
+    }
+
+    // Residuary Estate
+    html += `<h3>7. Residuary Estate</h3>`;
+    if (residue.shares.length) {
+      html += `<p>I give, devise and bequeath all the rest, residue and remainder of my estate of every kind and description, wheresoever situate, including any specific bequest that fails for any reason ("<strong>Residuary Estate</strong>"), to the following Beneficiaries in the following proportions:</p>`;
+      html += `<table style="width:100%;border-collapse:collapse;margin:6px 0"><thead><tr style="background:#eef2f7"><th style="text-align:left;padding:6px;border:1px solid #cbd5e1">Beneficiary</th><th style="text-align:left;padding:6px;border:1px solid #cbd5e1;width:170px">NRIC / Passport</th><th style="text-align:right;padding:6px;border:1px solid #cbd5e1;width:110px">Share (%)</th></tr></thead><tbody>`;
+      residue.shares.forEach(s => {
+        html += `<tr><td style="padding:6px;border:1px solid #cbd5e1">${esc(s.ben)}</td><td style="padding:6px;border:1px solid #cbd5e1">${esc(s.nric) || '—'}</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">${s.pct.toFixed(2)}%</td></tr>`;
+      });
+      html += `<tr style="font-weight:bold;background:#f8fafc"><td style="padding:6px;border:1px solid #cbd5e1" colspan="2">Total</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">${residue.total.toFixed(2)}%</td></tr>`;
+      html += `</tbody></table>`;
+    } else {
+      html += `<p>The whole of my residuary estate shall be distributed in accordance with the foregoing specific bequests; any unallocated portion shall be distributed in accordance with the laws of intestate succession.</p>`;
+    }
+    if (val('charity')) html += `<p><strong>Charitable Donations:</strong> ${esc(val('charity'))}</p>`;
+    if (val('funeral')) html += `<p><strong>Funeral &amp; Burial Wishes:</strong> ${esc(val('funeral'))}</p>`;
+
+    // Executor
+    if (val('executor')) {
+      html += `<h3>8. Appointment of Executor</h3>
+        <p>I appoint <strong>${esc(val('executor'))}</strong>${val('executorRelation') ? ' (' + esc(val('executorRelation')) + ')' : ''}, NRIC/Passport ${esc(val('executorNric')) || '—'}, to be the sole Executor and Trustee of this my Will (the "<strong>Executor</strong>").`;
+      if (val('altExecutor')) {
+        html += ` If the said Executor predeceases me, or is unable, unwilling or otherwise unfit to act or to continue to act, I appoint <strong>${esc(val('altExecutor'))}</strong>`;
+        if (val('altExecutorRelation')) html += ` (${esc(val('altExecutorRelation'))})`;
+        html += `, NRIC/Passport ${esc(val('altExecutorNric')) || '—'}, as the Alternate Executor and Trustee in his/her place.`;
+      }
+      html += `</p>`;
+    } else {
+      html += `<h3>8. Appointment of Executor</h3><p>No Executor has been named. The court shall appoint an administrator in accordance with applicable law.</p>`;
+    }
+
+    // BLANKET EXECUTOR POWERS — recovery of all assets
+    html += `<h3>9. Powers of the Executor</h3>
+      <p>I <strong>GIVE</strong> to my Executor the <strong>fullest and widest powers</strong> permitted by law, exercisable in his/her absolute discretion, to take any and all steps that he/she considers necessary, expedient or desirable to identify, locate, secure, recover, preserve, administer, realise and distribute the whole of my estate, wheresoever situate. Without limiting the generality of the foregoing, the Executor is expressly authorised to:</p>
+      <ol>
+        <li><strong>identify and trace</strong> all assets, accounts, investments, properties, debts owing to me, intellectual property, business interests, digital assets and any other property of any nature, whether in Malaysia or in any other jurisdiction;</li>
+        <li><strong>demand, sue for, recover and receive</strong> all monies, debts, claims, securities and other assets due, owing or belonging to me or to my estate from any person, body, institution, employer, government or authority whatsoever;</li>
+        <li><strong>commence, prosecute, defend, settle, compromise, refer to arbitration or discontinue</strong> any legal, regulatory, tax or administrative proceedings in my name or on behalf of my estate;</li>
+        <li><strong>engage and remunerate</strong> lawyers, accountants, tax agents, valuers, asset-tracing professionals, investigators, brokers, agents and any other professionals as the Executor may consider necessary, with their fees to be paid out of my estate;</li>
+        <li><strong>access, take possession of and operate</strong> all of my bank accounts, safety-deposit boxes, business premises, dwelling-houses, vehicles, electronic devices, online accounts and digital wallets, and to deal with banks, custodians, registrars, government authorities and any other third parties on behalf of my estate;</li>
+        <li><strong>sell, lease, mortgage, partition, exchange, transfer or otherwise dispose of</strong> any of my assets (whether real or personal, tangible or intangible), at such price, on such terms and at such time as the Executor thinks fit, with full power to give good receipts and discharges to purchasers;</li>
+        <li><strong>retain, invest and re-invest</strong> any part of the estate in any form of investment, without being restricted to investments authorised by law for trustees;</li>
+        <li><strong>carry on, wind up or sell</strong> any business in which I held an interest, and to exercise all voting and management rights attached to any shares or interests held by me;</li>
+        <li><strong>pay all Liabilities, taxes, duties and expenses</strong> out of the estate in accordance with Clause 4, and to apportion receipts and outgoings between capital and income as the Executor thinks fit;</li>
+        <li><strong>distribute the estate in specie or in cash</strong> (or any combination), and to make interim or partial distributions to Beneficiaries at any time;</li>
+        <li><strong>execute, sign and deliver</strong> any deed, instrument, transfer, release, acknowledgment, indemnity or other document necessary or convenient for the purposes set out above;</li>
+        <li>and generally to <strong>do all such acts, matters and things</strong> as the Executor may consider necessary or appropriate for the due administration of my estate.</li>
+      </ol>
+      <p>My Executor shall not be personally liable for any loss to my estate arising from any act or omission done in good faith in the exercise of the powers conferred above, and shall be entitled to a full indemnity out of my estate for all costs, charges, expenses and liabilities reasonably incurred in the discharge of his/her duties.</p>`;
+
+    // Trust
+    html += `<h3>10. Trust &amp; Asset Management</h3>`;
+    if (useTrust) {
+      html += `<p>I direct that a <strong>${esc(val('trustType'))}</strong> be established upon my passing under the following terms:</p><ul>`;
+      if (val('trusteeName')) {
+        html += `<li>Trustee: <strong>${esc(val('trusteeName'))}</strong>`;
+        if (val('trusteeRelation')) html += ` (${esc(val('trusteeRelation'))})`;
+        if (val('trusteeNric')) html += `, NRIC/Passport ${esc(val('trusteeNric'))}`;
+        html += `.</li>`;
+      }
+      if (val('altTrustee')) {
+        html += `<li>Alternate Trustee: <strong>${esc(val('altTrustee'))}</strong>`;
+        if (val('altTrusteeRelation')) html += ` (${esc(val('altTrusteeRelation'))})`;
+        if (val('altTrusteeNric')) html += `, NRIC/Passport ${esc(val('altTrusteeNric'))}`;
+        html += `.</li>`;
+      }
+      if (val('trustPurpose')) html += `<li>Purpose: ${esc(val('trustPurpose'))}</li>`;
+      if (val('trustAssets')) html += `<li>Trust Assets: ${esc(val('trustAssets'))}</li>`;
+      if (val('trustBeneficiaries')) html += `<li>Trust Beneficiaries: ${esc(val('trustBeneficiaries'))}</li>`;
+      if (val('trustConditions')) html += `<li>Conditions / Duration: ${esc(val('trustConditions'))}</li>`;
+      html += `</ul><p>The Trustee shall have full power to manage, invest, and distribute the trust assets in accordance with the conditions stated above and with the prudent person standard.</p>`;
+    } else {
+      html += `<p>No trust is established under this Will. My Executor shall distribute the estate directly to the beneficiaries named herein.</p>`;
+    }
+
+    // Execution
+    html += `<div class="sig-block">
+      <p>IN WITNESS WHEREOF, I have hereunto set my hand on this <strong>${today}</strong>.</p>
+      <div class="sig-line">${esc(name)}<br/><span style="font-size:12px">(Testator)</span></div>
+      <p style="margin-top:40px"><strong>SIGNED</strong> by the above-named Testator in our joint presence, and then by us in his/her presence:</p>
+      <div style="display:flex;gap:40px;flex-wrap:wrap">
+        <div class="sig-line">Witness 1 — Name, NRIC, Address, Signature</div>
+        <div class="sig-line">Witness 2 — Name, NRIC, Address, Signature</div>
+      </div>
+      <p style="margin-top:30px;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:12px">
+        <em>Disclaimer: This document is a draft generated from user inputs and is not legal advice. Please consult a qualified lawyer before execution. A valid will typically requires the testator's signature in the presence of two witnesses who are not beneficiaries.</em>
+      </p>
+    </div>`;
+
+    document.getElementById('output').innerHTML = html;
+    document.getElementById('output').style.display = 'block';
+    document.getElementById('actions').style.display = 'flex';
+    document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Seed one beneficiary by default
+  addBeneficiary();
+
+  /* ---------- AI WILL ASSISTANT ---------- */
+  const FAQ = [
+    {
+      q: ["what is a will", "definition of will", "purpose of will"],
+      a: "A will (Last Will and Testament) is a legal document that states how you want your assets distributed after your death, who should care for your minor children, and who should administer your estate (the executor). Without a will, your estate is divided under intestate succession laws, which may not reflect your wishes."
+    },
+    {
+      q: ["how to use", "how does this work", "how do i start", "instructions"],
+      a: "Fill in the five tabs in order:\n1. Personal Details — your identity\n2. Custody — minor children & guardian\n3. Current Assets — what you own\n4. Beneficiaries — who inherits what\n5. Trust — optional trust setup\n\nThen click 'Generate Will' to produce the draft. You can print it or save as PDF."
+    },
+    {
+      q: ["who can be executor", "what is executor", "executor role", "what does executor do"],
+      a: "An executor is the person you appoint to administer your estate. They collect assets, pay debts, file taxes, and distribute property to beneficiaries. Choose someone trustworthy, organized, and willing — typically a spouse, adult child, sibling, or a professional (lawyer/trust company). It's wise to also name an alternate executor."
+    },
+    {
+      q: ["witness", "witnesses", "how many witnesses", "who can witness"],
+      a: "Most jurisdictions require TWO adult witnesses present when you sign the will. Critically, witnesses must NOT be beneficiaries (or spouses of beneficiaries) — otherwise their gift may be void. Witnesses just verify you signed willingly; they do not need to read the contents."
+    },
+    {
+      q: ["guardian", "minor children", "custody", "who looks after children"],
+      a: "If you have children under 18, you should name a guardian in your will — the person who will raise them if both parents die. Pick someone who shares your values and is willing/able. Always name an alternate guardian. Discuss this with the proposed guardian beforehand."
+    },
+    {
+      q: ["beneficiary", "who can be beneficiary", "beneficiaries"],
+      a: "A beneficiary is anyone you leave assets to — family, friends, charities, or organizations. You can give specific items (e.g., 'my house'), percentages of your estate, or fixed sums. Naming an alternate beneficiary protects against your primary beneficiary predeceasing you."
+    },
+    {
+      q: ["trust", "what is trust", "should i have a trust", "living trust", "testamentary trust"],
+      a: "A trust holds assets managed by a trustee for beneficiaries. Common uses:\n• Manage assets for minor children until they reach a chosen age\n• Provide for a dependent with special needs\n• Reduce probate delays\n• Charitable giving\n\nA TESTAMENTARY trust is created by your will and takes effect at death. A LIVING trust is created during your lifetime. Toggle Section 5 if you want one."
+    },
+    {
+      q: ["trustee", "what is trustee", "who can be trustee"],
+      a: "A trustee manages assets in a trust on behalf of beneficiaries. They have a fiduciary duty — must act prudently and in beneficiaries' best interests. Can be an individual (family member, friend) or a corporate trustee (bank, trust company). Naming an alternate trustee is highly recommended."
+    },
+    {
+      q: ["assets", "what assets to include", "what should i list"],
+      a: "List everything of meaningful value:\n• Real property (homes, land)\n• Bank accounts\n• Investments (stocks, bonds, funds)\n• Business interests / shareholdings\n• Vehicles\n• Valuable personal items (jewellery, art, collections)\n• Insurance policies (note: usually pass via beneficiary nomination, not the will)\n• Foreign assets\n• Digital assets (crypto, online accounts)"
+    },
+    {
+      q: ["digital assets", "crypto", "online accounts", "bitcoin"],
+      a: "Digital assets include cryptocurrency, online financial accounts, email, social media, and cloud storage. List them and consider leaving access instructions separately (NEVER include passwords or seed phrases in the will itself, as wills become public during probate). A separate sealed 'digital asset letter' kept with your lawyer is safer."
+    },
+    {
+      q: ["muslim", "islamic", "faraid", "syariah"],
+      a: "In Malaysia, Muslims are subject to Faraid (Islamic inheritance law) for most of their estate, administered under Syariah law. A Muslim can only freely will up to 1/3 of the estate to non-heirs (a 'wasiat'); the remaining 2/3 follows fixed Faraid shares. Consult a Syariah lawyer or Amanah Raya before finalizing a Muslim will."
+    },
+    {
+      q: ["malaysia", "malaysian law", "wills act"],
+      a: "Wills in Malaysia for non-Muslims are governed by the Wills Act 1959. Requirements: testator must be 18+, of sound mind, sign in the presence of two witnesses who are not beneficiaries. For Muslims, Faraid applies (see 'Muslim'). Probate is granted by the High Court."
+    },
+    {
+      q: ["debts", "liabilities", "loans"],
+      a: "Your debts (mortgages, loans, credit cards) are paid from your estate BEFORE beneficiaries receive their inheritance. List liabilities in Section 3 so your executor knows where to find creditor information. Secured debts (e.g., mortgage) typically stay with the secured asset."
+    },
+    {
+      q: ["update", "change will", "revoke", "amend"],
+      a: "Review your will every 3–5 years and after major life events: marriage, divorce, birth/death of family members, large asset changes, or moving to a new country. Update either by writing a new will (which revokes prior ones) or by a 'codicil' for small changes. The new will should explicitly revoke earlier wills."
+    },
+    {
+      q: ["probate", "what is probate", "grant of probate"],
+      a: "Probate is the court process that confirms a will is valid and authorizes the executor to act. The executor applies for a Grant of Probate from the High Court; once granted, they can collect assets and distribute the estate. It can take several months to over a year depending on complexity."
+    },
+    {
+      q: ["intestate", "no will", "die without will"],
+      a: "Dying without a will is called dying 'intestate.' Your estate is distributed under the Distribution Act 1958 (for non-Muslims in Malaysia) — fixed shares to spouse, children, parents. This may not reflect your wishes, can take longer, and creates family disputes. A will avoids all of this."
+    },
+    {
+      q: ["cost", "fee", "how much", "price"],
+      a: "This generator is free. If you engage a lawyer to draft or review your will, fees in Malaysia typically range from RM300–RM2,000 for straightforward estates, more for complex ones involving trusts, businesses, or foreign assets. Estate-administration costs (probate fees, executor expenses) are paid from the estate."
+    },
+    {
+      q: ["legal", "is this legal", "valid", "binding"],
+      a: "The generated document is a DRAFT designed to capture your intentions. To be legally binding, it must be:\n• Signed by you of your own free will\n• Witnessed by 2 adults who are NOT beneficiaries\n• You must be 18+ and of sound mind\n\nWe strongly recommend a lawyer review the draft before execution, especially for larger estates."
+    },
+    {
+      q: ["save", "download", "pdf", "print", "export"],
+      a: "After clicking 'Generate Will,' use the 'Print / Save as PDF' button. In the print dialog, choose 'Save as PDF' as the destination to get a PDF copy. The page is print-styled — the chat widget and form controls won't appear in the output."
+    },
+    {
+      q: ["data", "privacy", "stored", "secure"],
+      a: "All data stays in your browser — nothing is uploaded or saved to any server. Closing the page clears the form. Save your generated will as a PDF immediately, then store the signed paper original in a secure place (safe, lawyer's office, or with the executor)."
+    },
+    {
+      q: ["charity", "donate", "charitable"],
+      a: "You can leave gifts to registered charities or causes. Specify the exact legal name of the charity (and registration number if known) and the amount or specific asset. Section 4 has a field for charitable donations. Charitable bequests may also have tax advantages depending on jurisdiction."
+    },
+    {
+      q: ["funeral", "burial", "cremation"],
+      a: "You can express funeral and burial wishes in Section 4. Note: funeral wishes in a will are NOT legally binding — the will is often read after the funeral. It's wise to ALSO tell your family or executor verbally and in a separate letter."
+    },
+    {
+      q: ["spouse", "married", "wife", "husband"],
+      a: "If married, you should name your spouse in Section 1. Marriage automatically revokes an earlier will in many jurisdictions (Malaysian Wills Act 1959, s.12), so make a new will after marriage. Divorce may also affect provisions for an ex-spouse — review your will if your marital status changes."
+    },
+    {
+      q: ["foreign assets", "overseas property", "international"],
+      a: "Foreign assets (property, accounts overseas) may require a separate will in that jurisdiction, OR the foreign jurisdiction may honor your local will. Rules vary — common-law countries generally accept foreign wills, but many civil-law countries (e.g., France, Indonesia) have forced-heirship rules. Get cross-border legal advice."
+    },
+    {
+      q: ["age requirement", "how old", "minimum age"],
+      a: "You must be at least 18 years old to make a valid will in Malaysia (Wills Act 1959). Members of the armed forces on active service and sailors at sea can make 'privileged wills' at any age."
+    },
+    {
+      q: ["pet", "pets", "animals"],
+      a: "Pets are legally treated as property. You can leave instructions for their care and a sum of money to the person who agrees to look after them. You cannot leave property directly TO a pet, but you can create a 'pet trust' funded with money for their care."
+    },
+    {
+      q: ["thank", "thanks", "thx"],
+      a: "You're welcome! Anything else you'd like to know about wills or this form?"
+    },
+    {
+      q: ["hello", "hi", "hey"],
+      a: "Hi! 👋 I'm the Will Assistant. I can answer questions about how to use this form or general questions about wills, executors, trusts, beneficiaries, and estate planning. What would you like to know?"
+    },
+  ];
+
+  const SUGGESTED = [
+    "How do I use this form?",
+    "What is an executor?",
+    "Do I need a trust?",
+    "Witness rules?",
+    "Is this legally valid?",
+    "What about Muslim wills?",
+  ];
+
+  const log = document.getElementById('chatLog');
+  const chips = document.getElementById('chatChips');
+
+  function toggleChat() {
+    const box = document.getElementById('chatBox');
+    box.classList.toggle('open');
+    if (box.classList.contains('open') && !log.dataset.initialized) {
+      log.dataset.initialized = '1';
+      addBot("Hi! I'm your Will Assistant. Ask me anything about wills, estates, executors, trusts, or how to fill out this form.");
+      renderChips();
+      document.getElementById('chatInput').focus();
+    }
+  }
+
+  function renderChips() {
+    chips.innerHTML = '';
+    SUGGESTED.forEach(text => {
+      const b = document.createElement('button');
+      b.className = 'chip';
+      b.textContent = text;
+      b.onclick = () => { document.getElementById('chatInput').value = text; sendChat(); };
+      chips.appendChild(b);
+    });
+  }
+
+  function addMsg(text, who) {
+    const m = document.createElement('div');
+    m.className = 'msg ' + who;
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = text;
+    m.appendChild(b);
+    log.appendChild(m);
+    log.scrollTop = log.scrollHeight;
+    return b;
+  }
+  function addBot(text) { return addMsg(text, 'bot'); }
+  function addUser(text) { return addMsg(text, 'user'); }
+
+  function findAnswer(query) {
+    const q = query.toLowerCase();
+    let best = { score: 0, answer: null };
+    FAQ.forEach(item => {
+      item.q.forEach(key => {
+        const k = key.toLowerCase();
+        // exact phrase match
+        if (q.includes(k)) {
+          const score = k.length;
+          if (score > best.score) best = { score, answer: item.a };
+        } else {
+          // token overlap
+          const tokens = k.split(/\s+/);
+          const matches = tokens.filter(t => t.length > 2 && q.includes(t)).length;
+          if (matches >= Math.max(1, Math.ceil(tokens.length / 2))) {
+            const score = matches * 2;
+            if (score > best.score) best = { score, answer: item.a };
+          }
+        }
+      });
+    });
+    return best.answer;
+  }
+
+  function sendChat() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    addUser(text);
+    input.value = '';
+
+    const typing = addBot('…');
+    typing.classList.add('typing');
+
+    setTimeout(() => {
+      typing.parentElement.remove();
+      const ans = findAnswer(text);
+      if (ans) {
+        addBot(ans);
+      } else {
+        addBot("I don't have a specific answer for that. Try asking about: executors, witnesses, trusts, beneficiaries, guardians, Muslim wills, probate, foreign assets, or how to use the form. For specific legal advice, please consult a qualified lawyer.");
+      }
+    }, 380);
+  }
+</script>
+
+</body>
+</html>
