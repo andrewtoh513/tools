@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATP Will Generator v7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f0f2f7;font-size:14px;line-height:1.7}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#c1cad8;border-radius:3px}
+.em-hl{outline:1.5px dashed rgba(255,200,0,0.7)!important;background:rgba(255,255,0,0.12)!important;border-radius:3px!important}
+.lang-pill{display:inline-flex;border:1.5px solid rgba(201,168,76,0.4);border-radius:20px;overflow:hidden}
+.lang-pill button{background:transparent;border:none;font-size:11px;font-weight:700;padding:4px 11px;cursor:pointer;letter-spacing:0.04em;transition:background 0.18s,color 0.18s}
+.lang-pill button.active{background:rgba(201,168,76,0.25)}
+.tc{transition:box-shadow 0.2s,transform 0.2s}.tc:hover{box-shadow:0 10px 32px rgba(14,34,64,0.14);transform:translateY(-2px)}
+.eps::-webkit-scrollbar{width:5px}.eps::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px}
+button:focus{outline:2px solid rgba(201,168,76,0.5);outline-offset:2px}
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+const {useState,useContext,createContext,useEffect}=React;
+const EC=createContext({em:false,cfg:{},setCfg:()=>{}});
+const LC=createContext({lang:"en",setLang:()=>{}});
+function useEdit(){return useContext(EC);}
+function useLang(){return useContext(LC);}
+
+// ⚠️ NOTE TO ANDREW: BM and Chinese legal strings are AI-generated translations.
+// Please review all legal caveats carefully before going live.
+const T={
+  navHome:{en:"Home",bm:"Laman Utama",zh:"首页"},
+  navCTA:{en:"Write My Will →",bm:"Tulis Wasiat →",zh:"立遗嘱 →"},
+  navEdit:{en:"✏️ Edit Page",bm:"✏️ Edit",zh:"✏️ 编辑"},
+  navClose:{en:"✕ Close Editor",bm:"✕ Tutup",zh:"✕ 关闭"},
+  badge:{en:"⚖️ Bar Council Registered",bm:"⚖️ Berdaftar Majlis Peguam",zh:"⚖️ 马来西亚律师公会注册"},
+  heroCTA:{en:"Write My Will Now →",bm:"Tulis Wasiat Saya Sekarang →",zh:"立即立遗嘱 →"},
+  heroSubLine:{en:"Complete legal document · Ready to sign",bm:"Dokumen undang-undang lengkap · Sedia untuk ditandatangani",zh:"完整法律文件 · 可直接签署"},
+  priceNote:{en:"Introductory Offer · Limited Time",bm:"Tawaran Perkenalan · Masa Terhad",zh:"限时优惠价"},
+  tagline:{en:"Write Your Will.\nProtect Your Family.",bm:"Tulis Wasiat Anda.\nLindungi Keluarga Anda.",zh:"立遗嘱。\n保护您的家人。"},
+  heroSub:{en:"Your complete will, generated and ready to sign — in under 30 minutes. Legally valid under the Wills Act 1959 (Act 346).",bm:"Wasiat lengkap anda, dijana dan sedia untuk ditandatangani dalam masa 30 minit. Sah dari segi undang-undang di bawah Akta Wasiat 1959 (Akta 346).",zh:"您的完整遗嘱文件，30分钟内生成并可直接签署。依据1959年遗嘱法令（第346法令）具有法律效力。"},
+  howTitle:{en:"How It Works — 4 Steps",bm:"Cara Ia Berfungsi — 4 Langkah",zh:"如何运作 — 4 步骤"},
+  howSteps:{
+    en:["Fill in your details, assets & wishes online (under 30 min)","Your complete will document is generated instantly on submission","Sign in the presence of 2 independent witnesses — full instructions included","Your signed will is safely stored — your family is protected"],
+    bm:["Isi butiran, aset & hasrat anda dalam talian (bawah 30 minit)","Dokumen wasiat lengkap anda dijana serta-merta selepas penyerahan","Tandatangan di hadapan 2 saksi bebas — arahan lengkap disertakan","Wasiat yang ditandatangani disimpan dengan selamat — keluarga anda dilindungi"],
+    zh:["在线填写您的个人资料、资产及意愿（不超过30分钟）","提交后立即生成完整遗嘱文件","在两名独立见证人面前签署——附有完整见证说明","您已签署的遗嘱妥善保存 — 家人受到保障"]
+  },
+  s1l:{en:"Wills Drafted",bm:"Wasiat Digubal",zh:"遗嘱已起草"},
+  s2l:{en:"Years in Practice",bm:"Tahun Berpengalaman",zh:"执业年数"},
+  s3l:{en:"Wills Act 1959",bm:"Akta Wasiat 1959",zh:"1959年遗嘱法令"},
+  s4l:{en:"Google Reviews",bm:"Ulasan Google",zh:"谷歌评价"},
+  whyTitle:{en:"Why You Need a Will",bm:"Mengapa Anda Perlu Wasiat",zh:"为什么您需要遗嘱"},
+  whySub:{en:"Without a will, Malaysian law — not you — decides what happens to everything you've built.",bm:"Tanpa wasiat, undang-undang Malaysia — bukan anda — yang menentukan nasib segala yang anda bina.",zh:"没有遗嘱，马来西亚法律——而非您——将决定您毕生积累的一切如何处置。"},
+  whyCards:{
+    en:[{icon:"🏛",title:"The Law Decides Without You",text:"The Distribution Act 1958 fixes who inherits — it may not match your intentions for your spouse, children, or extended family."},{icon:"👨‍👩‍👧",title:"Protect Minor Children",text:"Without a will, there is no nominated guardian for your children. The court appoints one — often slow, expensive, and contested."},{icon:"⏱",title:"Avoid Years of Delays",text:"Intestate estates in Malaysia can take 5–10 years to distribute. A clearly drafted will drastically reduces this."}],
+    bm:[{icon:"🏛",title:"Undang-undang Menentukan Tanpa Anda",text:"Akta Pembahagian 1958 menetapkan siapa yang mewarisi — ia mungkin tidak menepati hasrat anda untuk pasangan, anak-anak, atau keluarga luas anda."},{icon:"👨‍👩‍👧",title:"Lindungi Anak-anak Bawah Umur",text:"Tanpa wasiat, tiada penjaga yang dinamakan untuk anak-anak anda. Mahkamah yang melantik — sering lambat, mahal, dan menjadi perbalahan."},{icon:"⏱",title:"Elakkan Kelewatan Bertahun-tahun",text:"Harta pusaka tanpa wasiat di Malaysia boleh mengambil masa 5–10 tahun untuk diagihkan."}],
+    zh:[{icon:"🏛",title:"法律代您做决定",text:"1958年分配法令规定谁可以继承遗产——这可能与您对配偶、子女或亲属的意愿不符。"},{icon:"👨‍👩‍👧",title:"保护未成年子女",text:"没有遗嘱，您的子女就没有指定监护人。法庭将指派——往往过程缓慢、费用高昂、充满争议。"},{icon:"⏱",title:"避免多年的拖延",text:"马来西亚无遗嘱遗产分配可能长达5至10年。一份清晰的遗嘱将大幅缩短这个过程。"}]
+  },
+  pricingTitle:{en:"Pricing",bm:"Harga",zh:"收费"},
+  pricingBadge:{en:"🏷 Introductory Offer",bm:"🏷 Tawaran Perkenalan",zh:"🏷 限时优惠"},
+  pricingPlan:{en:"Standard Will",bm:"Wasiat Standard",zh:"标准遗嘱"},
+  pricingDesc:{en:"For individuals with straightforward estates.",bm:"Untuk individu dengan harta pusaka yang mudah.",zh:"适用于资产结构简单的个人。"},
+  pricingFeat:{
+    en:["Complete legal document, instantly generated","Wills Act 1959 compliant","Signing & witnessing instructions included","PDF copy for your records"],
+    bm:["Dokumen undang-undang lengkap, dijana serta-merta","Mematuhi Akta Wasiat 1959","Arahan menandatangani & penyaksian disertakan","Salinan PDF untuk rekod anda"],
+    zh:["完整法律文件，即时生成","符周1959年遗嘱法令","附签署及见证说明","个人记录PDF副本"]
+  },
+  pricingFee:{en:"one-time fee",bm:"bayaran sekali sahaja",zh:"一次性收费"},
+  pricingBtn:{en:"Start Now →",bm:"Mula Sekarang →",zh:"立即开始 →"},
+  legalTitle:{en:"Legal References",bm:"Rujukan Undang-undang",zh:"法律参考"},
+  legalSub:{en:"This service is grounded in Malaysian law.",bm:"Perkhidmatan ini berasaskan undang-undang Malaysia.",zh:"本服务以马来西亚法律为基础。"},
+  legalRefs:{
+    en:[{icon:"📔",label:"Wills Act 1959 (Act 346)",sub:"Attorney General's Chambers Malaysia",url:"https://www.commonlii.org/my/legis/consol_act/wa19591988166/"},{icon:"🏢",label:"Bar Council Malaysia",sub:"Verify registered advocates & solicitors",url:"https://www.malaysianbar.org.my/"},{icon:"🏛",label:"Amanah Raya Berhad",sub:"Government trustee — estate & will administration",url:"https://www.amanahraya.my/"},{icon:"📿",label:"JAKIM — Islamic estate guidance",sub:"Faraid & Wasiat reference for Muslim clients",url:"https://www.islam.gov.my/"}],
+    bm:[{icon:"📔",label:"Akta Wasiat 1959 (Akta 346)",sub:"Jabatan Peguam Negara Malaysia",url:"https://www.commonlii.org/my/legis/consol_act/wa19591988166/"},{icon:"🏢",label:"Majlis Peguam Malaysia",sub:"Sahkan peguambela & peguamcara berdaftar",url:"https://www.malaysianbar.org.my/"},{icon:"🏛",label:"Amanah Raya Berhad",sub:"Pemegang amanah kerajaan — pentadbiran harta & wasiat",url:"https://www.amanahraya.my/"},{icon:"📿",label:"JAKIM — Panduan harta Islam",sub:"Rujukan Faraid & Wasiat untuk klien Muslim",url:"https://www.islam.gov.my/"}],
+    zh:[{icon:"📔",label:"1959年遗嘱法令（第346法令）",sub:"马来西亚总检察署",url:"https://www.commonlii.org/my/legis/consol_act/wa19591988166/"},{icon:"🏢",label:"马来西亚律师公会",sub:"查核注册律师资格",url:"https://www.malaysianbar.org.my/"},{icon:"🏛",label:"Amanah Raya Berhad",sub:"政府受托人——遗产与遗嘱管理",url:"https://www.amanahraya.my/"},{icon:"📿",label:"JAKIM——伊斯兰遗产指引",sub:"穆斯林客户的法定继承与遗嘱参考",url:"https://www.islam.gov.my/"}]
+  },
+  faqTitle:{en:"Frequently Asked Questions",bm:"Soalan Lazim",zh:"常见问题"},
+  faqs:{
+    en:[{q:"Is this will legally valid in Malaysia?",a:"Yes — for non-Muslims. The document complies with the Wills Act 1959 (Act 346). It must be signed in the presence of two witnesses who are not beneficiaries. Full witnessing instructions are included with your document."},{q:"Can Muslims use this service?",a:"Muslim estates are governed by Faraid. A Wasiat covers only your discretionary 1/3. We have a separate Muslim Wasiat pathway with state-specific guidance — select 'Muslim' when starting."},{q:"Is my NRIC and personal data secure?",a:"All data is encrypted and handled with strict confidentiality under our professional obligations as a Malaysian law firm. We do not share your information with third parties."},{q:"What happens after I submit?",a:"Your will document is generated instantly upon payment. Download and print it, then sign in the presence of two independent witnesses — full witnessing instructions are included with your document."},{q:"Can EPF, Takaful or ASB be included?",a:"EPF pays your nominee as trustee who must then distribute per your will. Takaful goes directly to named beneficiaries. Your will still governs what happens when no nominee is named."},{q:"My estate is complex — can I still use this?",a:"For complex situations — overseas assets, businesses, blended families — contact us directly for a consultation."}],
+    bm:[{q:"Adakah wasiat ini sah dari segi undang-undang di Malaysia?",a:"Ya — bagi bukan Muslim. Dokumen ini mematuhi Akta Wasiat 1959 (Akta 346). Ia mesti ditandatangani di hadapan dua orang saksi yang bukan benefisiari. Arahan penyaksian lengkap disertakan bersama dokumen anda."},{q:"Bolehkah Muslim menggunakan perkhidmatan ini?",a:"Harta pusaka Muslim dikawal selia oleh Faraid. Wasiat hanya meliputi bahagian budi bicara 1/3 anda. Kami menyediakan laluan Wasiat Muslim berasingan — pilih 'Muslim' semasa memulakan."},{q:"Adakah nombor MyKad dan data peribadi saya selamat?",a:"Semua data disulitkan dan dikendalikan dengan kerahsiaan ketat di bawah obligasi profesional kami. Kami tidak berkongsi maklumat anda dengan pihak ketiga."},{q:"Apa yang berlaku selepas saya menghantar?",a:"Dokumen wasiat anda dijana serta-merta selepas pembayaran. Muat turun dan cetak, kemudian tandatangan di hadapan dua saksi bebas — arahan penyaksian lengkap disertakan."},{q:"Bolehkah EPF, Takaful atau ASB dimasukkan?",a:"EPF membayar kepada penama anda sebagai pemegang amanah yang mesti mengagihkan mengikut wasiat anda. Takaful pergi terus kepada benefisiari yang dinamakan."},{q:"Harta pusaka saya kompleks — bolehkah saya menggunakan ini?",a:"Untuk situasi kompleks — aset luar negara, perniagaan, keluarga campuran — hubungi kami terus untuk rundingan."}],
+    zh:[{q:"这份遗嘱在马来西亚具有法律效力吗？",a:"是的——适用于非穆斯林。本文件符周1959年遗嘱法令（第346法令）。须在两名非受益人的见证人面前签署。文件附有完整的见证说明。"},{q:"穆斯林可以使用此服务吗？",a:"穆斯林遗产受Faraid管辖。遗嘱（Wasiat）仅涵盖您可自由支配的三分之一份额。我们提供专属的穆斯林遗嘱途径——开始时请选择“穆斯林”。"},{q:"我的身份证号码和个人资料安全吗？",a:"所有数据均经过加密，并依据本律师事务所的专业责任严格保密处理。我们不会与第三方共享您的信息。"},{q:"提交后会发生什么？",a:"付款后您的遗嘱文件即时生成。下载并打印，然后在两名独立见证人面前签署——附有完整见证说明。"},{q:"EPF、Takaful或ASB可以纳入吗？",a:"EPF将支付给您的受托受益人，后者须依据您的遗嘱进行分配。回教保险直接支付给指定受益人。"},{q:"我的遗产情决复杂，仍然可以使用吗？",a:"对于复杂情决——海外资产、生意、重组家庭——请直接联系我们进行咋谈。"}]
+  },
+  footerTag:{en:"Bar Council Registered\nWills Act 1959 Compliant\nWasiat — Islamic Family Law Compliant",bm:"Berdaftar Majlis Peguam\nMematuhi Akta Wasiat 1959\nWasiat — Mematuhi Undang-undang Keluarga Islam",zh:"马来西亚律师公会注册\n符周1959年遗嘱法令\n遗嘱 — 符合伊斯兰家庭法"},
+  trkHead:{en:"Before We Begin",bm:"Sebelum Kita Mulakan",zh:"开始之前"},
+  trkSub:{en:"Malaysian law produces two legally distinct documents depending on your religion. Select the correct pathway below.",bm:"Undang-undang Malaysia menghasilkan dua dokumen berbeza bergantung kepada agama anda. Pilih laluan yang betul di bawah.",zh:"马来西亚法律根据宗教信仰产生两种法律上截然不同的文件。请选择正确的申请路径。"},
+  trkNMTitle:{en:"Non-Muslim",bm:"Bukan Muslim",zh:"非穆斯林"},
+  trkNMBadge:{en:"WILLS ACT 1959",bm:"AKTA WASIAT 1959",zh:"1959年遗嘱法令"},
+  trkNMDesc:{en:"Standard will valid under the Wills Act 1959 (Act 346). You decide how your entire estate is distributed.",bm:"Wasiat standard yang sah di bawah Akta Wasiat 1959 (Akta 346). Anda menentukan bagaimana seluruh harta pusaka anda diagihkan.",zh:"依据1959年遗嘱法令（第346法令）有效的标准遗嘱。您决定整个遗产如何分配。"},
+  trkNMBtn:{en:"Start My Will →",bm:"Mulakan Wasiat Saya →",zh:"开始立遗嘱 →"},
+  trkMTitle:{en:"Muslim (Wasiat)",bm:"Muslim (Wasiat)",zh:"穆斯林（遗嘱/Wasiat）"},
+  trkMBadge:{en:"ISLAMIC FAMILY LAW · STATE-SPECIFIC",bm:"UNDANG-UNDANG KELUARGA ISLAM · KHUSUS NEGERI",zh:"伊斯兰家庭法 · 各州适用"},
+  trkMDesc:{en:"A Wasiat covers your discretionary 1/3 share. Two-thirds is distributed by Faraid. State law applies.",bm:"Wasiat meliputi bahagian budi bicara 1/3 anda. Dua pertiga diagihkan oleh Faraid. Undang-undang negeri terpakai.",zh:"遗嘱（Wasiat）涵盖您可自由支配的三分之一份额。三分之二将依据Faraid分配。各州法律适用。"},
+  trkMBtn:{en:"Proceed to Wasiat →",bm:"Teruskan ke Wasiat →",zh:"继续至遗嘱（Wasiat）→"},
+  trkNote:{en:"Your NRIC religion field determines which route applies. If you are Muslim, you must use the Wasiat route — a standard civil will has no legal effect on assets governed by Faraid.",bm:"Medan agama pada MyKad anda menentukan laluan yang terpakai. Jika anda Muslim, anda mesti menggunakan laluan Wasiat — wasiat sivil standard tidak mempunyai kesan undang-undang ke atas aset yang dikawal selia oleh Faraid.",zh:"您身份证（MyKad）上的宗教栏位决定适用路径。若您是穆斯林，必须使用遗嘱（Wasiat）路径——标准民事遗嘱对受Faraid管辖的资产没有法律效力。"},
+  trkNoteSure:{en:"Not sure?",bm:"Tidak pasti?",zh:"不确定？"},
+  nmcHead:{en:"Important Legal Information — Non-Muslim Will",bm:"Maklumat Undang-undang Penting — Wasiat Bukan Muslim",zh:"重要法律信息 — 非穆斯林遗嘱"},
+  nmcIntro:{en:"Before completing your will, read the following. These are substantive rules that directly affect what your will can and cannot do.",bm:"Sebelum melengkapkan wasiat anda, baca perkara berikut. Ini adalah peraturan substantif yang secara langsung mempengaruhi apa yang wasiat anda boleh dan tidak boleh lakukan.",zh:"在完成遗嘱之前，请阅读以下内容。这些是直接影响您遗嘱效力与限制的实质性规则。"},
+  nmcCards:{
+    en:[{badge:"IMPORTANT",bc:"#dbeafe",bt:"#1e40af",title:"Marriage Does NOT Revoke Your Will",body:"In Malaysia, getting married does NOT automatically revoke a previously made will. A divorce does not automatically update your will either."},{badge:"CRITICAL",bc:"#fee2e2",bt:"#b91c1c",title:"Joint Tenancy Bypasses Your Will",body:"Property held as 'joint tenants' passes AUTOMATICALLY to the surviving co-owner upon your death — regardless of what your will says."},{badge:"CRITICAL",bc:"#fee2e2",bt:"#b91c1c",title:"EPF Nominee ≠ Beneficiary",body:"Your EPF nominee is a TRUSTEE, not a direct beneficiary. They receive the EPF payout and are legally required to distribute it according to your will."},{badge:"IMPORTANT",bc:"#fef3c7",bt:"#78350f",title:"Insurance & Takaful Bypass Your Will",body:"Life insurance and Takaful payouts go directly to named beneficiaries — your will has no say over them."},{badge:"CRITICAL",bc:"#fee2e2",bt:"#b91c1c",title:"Witnessing Rules Are Strict",body:"Your will must be signed in the presence of 2 witnesses at the same time. A witness CANNOT be a beneficiary, and the spouse of a witness CANNOT be a beneficiary."},{badge:"IMPORTANT",bc:"#fef3c7",bt:"#78350f",title:"Foreign Assets Require Separate Wills",body:"A Malaysian will has no legal jurisdiction over assets held in other countries."},{badge:"NOTE",bc:"#dcfce7",bt:"#166534",title:"Minor Beneficiaries Cannot Receive Directly",body:"Anyone under 18 cannot legally receive assets directly. Without a trust in your will, the court appoints a management committee — slow and expensive."},{badge:"NOTE",bc:"#dcfce7",bt:"#166534",title:"Your Executor Carries a Heavy Responsibility",body:"Your executor deals with banks, LHDN, EPF, courts, and creditors for potentially 12–24 months. Choose someone organised, available, and practically capable."}],
+    bm:[{badge:"PENTING",bc:"#dbeafe",bt:"#1e40af",title:"Perkahwinan TIDAK Membatalkan Wasiat",body:"Di Malaysia, berkahwin TIDAK secara automatik membatalkan wasiat yang dibuat sebelumnya. Perceraian juga tidak mengemas kini wasiat anda secara automatik."},{badge:"KRITIKAL",bc:"#fee2e2",bt:"#b91c1c",title:"Pegangan Bersama Memintas Wasiat",body:"Harta yang dipegang sebagai 'joint tenant' SECARA AUTOMATIK berpindah kepada pemilik bersama yang masih hidup — tanpa mengira apa yang dinyatakan dalam wasiat anda."},{badge:"KRITIKAL",bc:"#fee2e2",bt:"#b91c1c",title:"Penama KWSP ≠ Benefisiari",body:"Penama KWSP anda adalah PEMEGANG AMANAH, bukan benefisiari langsung. Mereka mesti mengagihkan bayaran KWSP mengikut wasiat anda."},{badge:"PENTING",bc:"#fef3c7",bt:"#78350f",title:"Insurans & Takaful Memintas Wasiat",body:"Bayaran insurans nyawa dan Takaful pergi terus kepada benefisiari yang dinamakan — wasiat anda tidak mempunyai kuasa ke atasnya."},{badge:"KRITIKAL",bc:"#fee2e2",bt:"#b91c1c",title:"Peraturan Penyaksian Adalah Ketat",body:"Wasiat anda mesti ditandatangani di hadapan 2 saksi yang hadir pada masa yang sama. Saksi TIDAK BOLEH menjadi benefisiari, dan pasangan saksi juga TIDAK BOLEH."},{badge:"PENTING",bc:"#fef3c7",bt:"#78350f",title:"Aset Luar Negara Memerlukan Wasiat Berasingan",body:"Wasiat Malaysia tidak mempunyai bidang kuasa ke atas aset yang dipegang di negara lain."},{badge:"NOTA",bc:"#dcfce7",bt:"#166534",title:"Benefisiari Bawah Umur Tidak Boleh Menerima Terus",body:"Sesiapa yang berumur bawah 18 tahun tidak boleh menerima aset secara langsung. Tanpa amanah dalam wasiat, mahkamah melantik jawatankuasa pengurusan."},{badge:"NOTA",bc:"#dcfce7",bt:"#166534",title:"Eksekutor Memikul Tanggungjawab Besar",body:"Eksekutor anda berurusan dengan bank, LHDN, KWSP, mahkamah, dan pemiutang selama 12–24 bulan. Pilih seseorang yang teratur dan berkemampuan."}],
+    zh:[{badge:"重要",bc:"#dbeafe",bt:"#1e40af",title:"结婚不会自动撤销您的遗嘱",body:"在马来西亚，结婚不会自动撤销之前立下的遗嘱。同样，离婚也不会自动更新您的遗嘱。"},{badge:"关键",bc:"#fee2e2",bt:"#b91c1c",title:"联名持有产权将绕过您的遗嘱",body:"以“联名租户”（Joint Tenant）方式持有的房产，在您去世后将自动转移给在世的共同拥有人——无论您的遗嘱内容如何。"},{badge:"关键",bc:"#fee2e2",bt:"#b91c1c",title:"公积金（EPF）受益人≠遗产受益人",body:"您的公积金受益人是受托人，而非直接受益人。他们收到公积金款项后，依法须按照您的遗嘱进行分配。"},{badge:"重要",bc:"#fef3c7",bt:"#78350f",title:"保险及回教保险将绕过您的遗嘱",body:"人寿保险及回教保险（Takaful）的赔偿金直接支付给指定受益人——您的遗嘱对其无约束力。"},{badge:"关键",bc:"#fee2e2",bt:"#b91c1c",title:"见证规则严格",body:"您的遗嘱须在两名同时在场的见证人面前签署。见证人不得为受益人，见证人的配偶亦不得为受益人。"},{badge:"重要",bc:"#fef3c7",bt:"#78350f",title:"海外资产需另立遗嘱",body:"马来西亚遗嘱对其他国家持有的资产不具法律管辖权。"},{badge:"注意",bc:"#dcfce7",bt:"#166534",title:"未成年受益人不得直接接收资产",body:"18岁以下人士依法不能直接接收资产。若遗嘱未设立信托，法庭将指派管理委员会——过程缓慢且费用高昂。"},{badge:"注意",bc:"#dcfce7",bt:"#166534",title:"遗嘱执行人肩负重大责任",body:"遗嘱执行人需与銀行、税务局（LHDN）、公积金（EPF）、法庭及债权人周旋，可能长达12至24个月。"}]
+  },
+  nmcAck:{
+    en:["My will does NOT cover assets held as joint tenants, assets with named insurance/Takaful beneficiaries, or EPF proceeds (paid to my nominee as trustee).","Anyone who witnesses my will — and their spouse — cannot be a beneficiary. I will ensure my two witnesses meet this requirement.","This will has no legal jurisdiction over assets I hold in foreign countries."],
+    bm:["Wasiat saya TIDAK meliputi aset yang dipegang sebagai penyewa bersama, aset dengan benefisiari insurans/Takaful yang dinamakan, atau hasil KWSP (dibayar kepada penama saya sebagai pemegang amanah).","Sesiapa yang menyaksikan wasiat saya — dan pasangan mereka — tidak boleh menjadi benefisiari. Saya akan memastikan dua saksi saya memenuhi syarat ini.","Wasiat ini tidak mempunyai bidang kuasa undang-undang ke atas aset yang saya pegang di negara asing."],
+    zh:["我的遗嘱不涵盖以联名租户方式持有的资产、有指定受益人的保险/Takaful资产，或公积金款项（支付给作为受托人的受益人）。","见证我遗嘱的任何人——及其配偶——不得成为遗嘱中的受益人。我将确保两名见证人符合此要求。","本遗嘱对我在外国持有的资产不具法律管辖权。"]
+  },
+  nmcAckLabel:{en:"I acknowledge and understand:",bm:"Saya mengakui dan memahami:",zh:"我确认并理解："},
+  nmcBtn:{en:"Proceed to Will Form →",bm:"Teruskan ke Borang Wasiat →",zh:"继续至遗嘱表格 →"},
+  nmcPleaseAck:{en:"Please acknowledge all three points above",bm:"Sila akui ketiga-tiga perkara di atas",zh:"请确认以上三点"},
+  mcHead:{en:"Critical Information for Muslim Clients",bm:"Maklumat Kritikal untuk Klien Muslim",zh:"穆斯林客户重要信息"},
+  mcIntro:{en:"A Wasiat operates under fundamentally different rules from a civil will. Read and acknowledge each point below before proceeding.",bm:"Wasiat beroperasi di bawah peraturan yang berbeza secara asasi daripada wasiat sivil. Baca dan akui setiap perkara di bawah sebelum meneruskan.",zh:"遗嘱（Wasiat）依据与民事遗嘱根本不同的规则运作。请在继续之前阅读并确认以下每项内容。"},
+  mcCards:{
+    en:[{badge:"CRITICAL",bc:"#fee2e2",bt:"#b91c1c",title:"The One-Third Rule",body:"A Wasiat can only direct your discretionary 1/3 share. The remaining 2/3 is distributed automatically by Faraid to fixed heirs."},{badge:"CRITICAL",bc:"#fee2e2",bt:"#b91c1c",title:"Cannot Gift to Faraid Heirs",body:"You cannot use a Wasiat to give extra assets to a spouse, child, or parent who already inherits under Faraid — unless ALL other Faraid heirs give written consent after your death."},{badge:"IMPORTANT",bc:"#fef3c7",bt:"#78350f",title:"EPF, Takaful & Tabung Haji",body:"These are distributed as hibah directly to your named nominee — outside the Wasiat entirely. The Wasiat does not control them."},{badge:"IMPORTANT",bc:"#fef3c7",bt:"#78350f",title:"State Law Applies",body:"Malaysia has 16 jurisdictions each with their own Islamic Family Law Enactment. Rules on witnesses, registration and interpretation vary significantly."},{badge:"IMPORTANT",bc:"#fef3c7",bt:"#78350f",title:"Harta Sepencarian",body:"Matrimonial property must be resolved in Syariah court before Faraid distribution begins."},{badge:"NOTE",bc:"#dbeafe",bt:"#1e40af",title:"Honest Assessment",body:"For estates with significant assets, business interests, or blended families, we strongly recommend a direct consultation."}],
+    bm:[{badge:"KRITIKAL",bc:"#fee2e2",bt:"#b91c1c",title:"Peraturan Satu Pertiga",body:"Wasiat hanya boleh mengarahkan bahagian budi bicara 1/3 anda. Baki 2/3 diagihkan secara automatik oleh Faraid kepada waris tetap."},{badge:"KRITIKAL",bc:"#fee2e2",bt:"#b91c1c",title:"Tidak Boleh Memberi Hadiah kepada Waris Faraid",body:"Anda tidak boleh menggunakan Wasiat untuk memberikan aset tambahan kepada pasangan, anak, atau ibu bapa yang sudah mewarisi di bawah Faraid — melainkan semua waris Faraid lain bersetuju secara bertulis."},{badge:"PENTING",bc:"#fef3c7",bt:"#78350f",title:"KWSP, Takaful & Tabung Haji",body:"Ini diagihkan sebagai hibah terus kepada penama yang dinamakan — di luar Wasiat sepenuhnya. Wasiat tidak mengawal mereka."},{badge:"PENTING",bc:"#fef3c7",bt:"#78350f",title:"Undang-undang Negeri Terpakai",body:"Malaysia mempunyai 16 bidang kuasa masing-masing dengan Enakmen Undang-undang Keluarga Islam sendiri. Peraturan berbeza dengan ketara."},{badge:"PENTING",bc:"#fef3c7",bt:"#78350f",title:"Harta Sepencarian",body:"Harta perkahwinan mesti diselesaikan di mahkamah Syariah sebelum pengagihan Faraid bermula."},{badge:"NOTA",bc:"#dbeafe",bt:"#1e40af",title:"Penilaian Jujur",body:"Untuk harta pusaka yang kompleks, kami amat mengesyorkan perundingan langsung."}],
+    zh:[{badge:"关键",bc:"#fee2e2",bt:"#b91c1c",title:"三分之一规则",body:"遗嘱（Wasiat）仅可支配您自由裁量的三分之一份额。其余三分之二将由Faraid自动分配给固定继承人。"},{badge:"关键",bc:"#fee2e2",bt:"#b91c1c",title:"不得向法定继承人赠予",body:"您不得利用遗嘱（Wasiat）向已在Faraid制度下继承遗产的配偶、子女或父母给予额外资产——除非所有其他Faraid继承人在您去世后以书面形式表示同意。"},{badge:"重要",bc:"#fef3c7",bt:"#78350f",title:"公积金、Takaful及Tabung Haji",body:"这些资产以Hibah方式直接支付给您的指定受益人——完全独立于遗嘱（Wasiat）之外。"},{badge:"重要",bc:"#fef3c7",bt:"#78350f",title:"各州法律适用",body:"马来西亚有16个司法管辖区，各自拥有伊斯兰家庭法令。关于见证人、登记及条文解释的规则差异显著。"},{badge:"重要",bc:"#fef3c7",bt:"#78350f",title:"婚姻共同财产（Harta Sepencarian）",body:"婚姻共同财产须先在回教法庭解决，Faraid分配才能开始。"},{badge:"注意",bc:"#dbeafe",bt:"#1e40af",title:"诚实评估",body:"对于拥有大量资产、商业利益或情决复杂的遗产，我们强烈建议进行直接咋谈。"}]
+  },
+  mcAck:{
+    en:["My Wasiat only controls my discretionary 1/3 share. Two-thirds of my estate will be distributed by Faraid regardless of what I write.","I cannot validly gift to a Faraid heir (spouse, child, parent) without written consent of all other Faraid heirs after my death.","State-specific Islamic Family Law applies to my Wasiat. I will follow the witnessing requirements specific to my state as outlined in the next step."],
+    bm:["Wasiat saya hanya mengawal bahagian budi bicara 1/3 saya. Dua pertiga daripada harta pusaka saya akan diagihkan oleh Faraid tanpa mengira apa yang saya tulis.","Saya tidak boleh menghadiahkan secara sah kepada waris Faraid tanpa persetujuan bertulis semua waris Faraid lain selepas kematian saya.","Undang-undang Keluarga Islam khusus negeri terpakai kepada Wasiat saya. Saya akan mematuhi keperluan penyaksian khusus negeri saya seperti yang digariskan pada langkah seterusnya."],
+    zh:["我的遗嘱（Wasiat）仅控制我自由裁量的三分之一份额。无论我在遗嘱中如何书写，我三分之二的遗产将由Faraid分配。","若无所有其他Faraid继承人在我去世后的书面同意，我不能有效地向Faraid继承人（配偶、子女、父母）赠予财产。","各州伊斯兰家庭法适用于我的遗嘱（Wasiat）。我将按照下一步骤中概述的各州见证要求执行。"]
+  },
+  mcAckLabel:{en:"I acknowledge and understand:",bm:"Saya mengakui dan memahami:",zh:"我确认并理解："},
+  mcBtn:{en:"Proceed — Select My State →",bm:"Teruskan — Pilih Negeri Saya →",zh:"继续 — 选择我的州属 →"},
+  mcPleaseAck:{en:"Please acknowledge all three points above",bm:"Sila akui ketiga-tiga perkara di atas",zh:"请确认以上三点"},
+  msHead:{en:"Select Your State",bm:"Pilih Negeri Anda",zh:"选择您的州属"},
+  msSub:{en:"Each Malaysian state and Federal Territory has its own Islamic Family Law Enactment. Select the state where you are domiciled.",bm:"Setiap negeri dan Wilayah Persekutuan Malaysia mempunyai Enakmen Undang-undang Keluarga Islam sendiri. Pilih negeri tempat anda bermastautin.",zh:"马来西亚每个州属和联邦直辖区都有其各自的伊斯兰家庭法令。请选择您的定居地州属。"},
+  msSelect:{en:"Select your state…",bm:"Pilih negeri anda…",zh:"选择您的州属…"},
+  msConfirm:{en:"Confirm State & Continue →",bm:"Sahkan Negeri & Teruskan →",zh:"确认州属并继续 →"},
+  msLaw:{en:"Governing Law",bm:"Undang-undang Pemerintah",zh:"适用法律"},
+  msAuth:{en:"Authority",bm:"Pihak Berkuasa",zh:"主管机构"},
+  msWit:{en:"Witness Requirements",bm:"Keperluan Saksi",zh:"见证人要求"},
+  msReg:{en:"Registration",bm:"Pendaftaran",zh:"登记"},
+  msCav:{en:"State-Specific Caveats",bm:"Amaran Khusus Negeri",zh:"州属特定注意事项"},
+  formBack:{en:"← Back",bm:"← Kembali",zh:"← 返回"},
+  formCont:{en:"Continue →",bm:"Teruskan →",zh:"继续 →"},
+  nmSteps:{en:["Personal","Guardianship","Assets","Beneficiaries","Executor"],bm:["Peribadi","Penjagaan","Aset","Benefisiari","Eksekutor"],zh:["个人资料","监护权","资产","受益人","执行人"]},
+  nmTitles:{en:["Personal Details","Guardianship","Your Assets","Beneficiaries","Executor & Trust"],bm:["Butiran Peribadi","Penjagaan","Aset Anda","Benefisiari","Eksekutor & Amanah"],zh:["个人资料","监护权","您的资产","受益人","执行人及信托"]},
+  nmDescs:{en:["Your basic legal information as it will appear in the will.","Nominate a guardian for your minor children (if any).","List your assets — including important notes on what passes through your will.","Who receives what, witnessing rules, and protections for minor beneficiaries.","Who carries out your will, manages trusts, and where your will is stored."],bm:["Maklumat undang-undang asas anda seperti yang akan tertera dalam wasiat.","Namakan penjaga untuk anak-anak bawah umur anda (jika ada).","Senaraikan aset anda — termasuk nota penting tentang apa yang melalui wasiat anda.","Siapa yang menerima apa, peraturan penyaksian, dan perlindungan untuk benefisiari bawah umur.","Siapa yang melaksanakan wasiat anda, mengurus amanah, dan di mana wasiat anda disimpan."],zh:["您的基本法律信息，将在遗嘱中呈现。","为您的未成年子女（如有）指定监护人。","列出您的资产——包括关于哪些资产通过遗嘱处理的重要说明。","谁获得什么，见证规则，以及对未成年受益人的保护。","谁执行您的遗嘱、管理信托，以及您的遗嘱存放地点。"]},
+  nmSubmit:{en:"Generate My Will →",bm:"Jana Wasiat Saya →",zh:"生成我的遗嘱 →"},
+  mSteps:{en:["Personal","Assets","Beneficiaries","Wasi","Review"],bm:["Peribadi","Aset","Benefisiari","Wasi","Semakan"],zh:["个人资料","资产","受益人","执行人","审核"]},
+  mTitles:{en:["Personal Details & Declarations","Wasiat-Eligible Assets","Wasiat Beneficiaries","Wasi (Executor)","Review & Generate"],bm:["Butiran Peribadi & Pengakuan","Aset Layak Wasiat","Benefisiari Wasiat","Wasi (Eksekutor)","Semak & Jana"],zh:["个人资料及声明","符合遗嘱资格的资产","遗嘱受益人","遗嘱执行人（Wasi）","审核并生成"]},
+  mDescs:{en:["Your basic legal information and mandatory acknowledgements for your Wasiat.","List only assets eligible for your 1/3 Wasiat share.","Who receives your discretionary 1/3 share.","The person responsible for executing your Wasiat.","Final review — your Wasiat document is generated on completion."],bm:["Maklumat undang-undang asas anda dan pengakuan mandatori untuk Wasiat anda.","Senaraikan hanya aset yang layak untuk bahagian Wasiat 1/3 anda.","Siapa yang menerima bahagian budi bicara 1/3 anda.","Orang yang bertanggungjawab melaksanakan Wasiat anda.","Semakan akhir — dokumen Wasiat anda dijana setelah selesai."],zh:["您的基本法律信息及遗嘱（Wasiat）的必要声明。","仅列出符合您三分之一遗嘱份额的资产。","谁将获得您可自由支配的三分之一份额。","负责执行您遗嘱的人员。","最终审核——完成后遗嘱文件即时生成。"]},
+  mSubmit:{en:"Generate My Wasiat →",bm:"Jana Wasiat Saya →",zh:"生成我的遗嘱 →"},
+  guideTitle:{en:"Lawyer's Guide",bm:"Panduan Peguam",zh:"律师指引"},
+  edColors:{en:"Colours",bm:"Warna",zh:"颜色"},
+  edNavy:{en:"Primary (Navy)",bm:"Utama (Biru Tentera)",zh:"主色（深蓝）"},
+  edGold:{en:"Accent (Gold)",bm:"Aksen (Emas)",zh:"强调色（金色）"},
+  edFont:{en:"Font Family",bm:"Keluarga Fon",zh:"字体"},
+  edSize:{en:"Base Font Size",bm:"Saiz Fon Asas",zh:"基础字体大小"},
+  edVis:{en:"Visibility",bm:"Keterlihatan",zh:"可见性"},
+  edTitle:{en:"Page Editor",bm:"Editor Halaman",zh:"页面编辑器"},
+  edSave:{en:"💾 Save Changes",bm:"💾 Simpan",zh:"💾 保存"},
+  edSaved:{en:"✓ Saved!",bm:"✓ Disimpan!",zh:"✓ 已保存！"},
+  edExport:{en:"📥 Export HTML",bm:"📥 Eksport HTML",zh:"📥 导出HTML"},
+  edReset:{en:"↺ Reset defaults",bm:"↺ Set semula",zh:"↺ 重置默认"},
+  edBanner:{en:"✏️ Edit mode active — click any highlighted field to edit inline",bm:"✏️ Mod edit aktif — klik mana-mana medan yang diserlahkan untuk edit",zh:"✏️ 编辑模式已激活 — 点击任意高亮字段进行内联编辑"}
+};
+function t(k,l){const e=T[k];if(!e)return k;return e[l]||e.en||k;}
+function tA(k,l){const e=T[k];if(!e)return[];return e[l]||e.en||[];}
+
+// ── ET (EDITABLE TEXT) ──────────────────────────────
+function ET({f,style,multi=false}){
+  const{em,cfg,setCfg}=useEdit();
+  const v=cfg[f]||"";
+  if(!em)return<span style={style}>{v}</span>;
+  if(multi)return<textarea value={v} onChange={e=>setCfg(c=>({...c,[f]:e.target.value}))} className="em-hl" style={{...style,resize:"vertical",border:"none",padding:"3px 6px",fontFamily:"inherit",outline:"none",display:"block",width:"100%",minHeight:56}}/>;
+  return<input value={v} onChange={e=>setCfg(c=>({...c,[f]:e.target.value}))} className="em-hl" style={{...style,border:"none",padding:"2px 6px",fontFamily:"inherit",outline:"none",display:"inline-block",minWidth:40}}/>;
+}
+function EditBanner(){
+  const{em}=useEdit();const{lang}=useLang();
+  if(!em)return null;
+  return<div style={{background:"rgba(255,200,0,0.13)",border:"1px dashed rgba(200,160,0,0.55)",borderRadius:6,padding:"7px 16px",fontSize:11.5,fontWeight:700,color:"#78350f",margin:"12px 36px 0"}}>{t("edBanner",lang)}</div>;
+}
+
+// ── DEFAULT CONFIG ──────────────────────────────────
+const DEF={
+  firmName:"Andrew Toh & Partners",navy:"#0e2240",gold:"#c9a84c",
+  fontFamily:"'Playfair Display', Georgia, serif",fontSize:15,
+  badge:"⚖️ Bar Council Registered",
+  tagline:"Write Your Will.\nProtect Your Family.",
+  heroSub:"Your complete will, generated and ready to sign — in under 30 minutes. Legally valid under the Wills Act 1959 (Act 346).",
+  price:"50",priceNote:"Introductory Offer · Limited Time",
+  s1v:"500+",s2v:"10+",s3v:"Act 346",s4v:"5★",
+  phone:"013-4133 139",email:"andrew@atpartner.co",
+  address:"D-25-03, Menara Suezcap 1, KL Gateway, 59200 KL",
+  vis:{
+    heroBadge:true,heroCard:true,heroChecks:true,trustBar:true,whySection:true,
+    pricingSection:true,legalSection:true,faqSection:true,footerSection:true,guidePanel:true,
+    whyCard0:true,whyCard1:true,whyCard2:true,pricingF0:true,pricingF1:true,pricingF2:true,pricingF3:true,
+    trustStat0:true,trustStat1:true,trustStat2:true,trustStat3:true,
+    heroCheck0:true,heroCheck1:true,heroCheck2:true,heroCheck3:true,
+    legalRef0:true,legalRef1:true,legalRef2:true,legalRef3:true
+  }
+};
+
+// ── STATES ──────────────────────────────────────────
+const STATES=[
+  {id:"wp-kl",name:"WP Kuala Lumpur",cx:"standard",law:"Administration of Islamic Law (Federal Territories) Act 1993",auth:"JAWI (Jabatan Agama Islam Wilayah Persekutuan)",wit:"2 adult Muslim witnesses — not named as beneficiaries",reg:"JAWI offers free Wasiat registration — strongly recommended",caveats:["Federal law applies — different from state enactments.","JAWI Wasiat registration is free and provides secure safekeeping.","Government employees: update KWAP/pension fund nominations separately."]},
+  {id:"selangor",name:"Selangor",cx:"standard",law:"Islamic Family Law (Selangor) Enactment 2003",auth:"MAIS (Majlis Agama Islam Selangor)",wit:"2 adult Muslim witnesses",reg:"MAIS Wasiat registration recommended",caveats:["Large state — Syariah court timelines can be slow.","Harta sepencarian claims are common. Resolve before Wasiat execution."]},
+  {id:"ns",name:"Negeri Sembilan",cx:"high",law:"Islamic Family Law (Negeri Sembilan) Enactment 2003",auth:"MAINS",wit:"2 adult Muslim witnesses",reg:"Registration with MAINS",caveats:["⚠️ CRITICAL — ADAT PERPATIH: Ancestral pusaka land does NOT fall under Faraid and CANNOT be in a Wasiat.","If you own tanah pesaka, consult a lawyer familiar with both Syariah AND Adat Perpatih law."]},
+  {id:"johor",name:"Johor",cx:"standard",law:"Islamic Family Law (Johor) Enactment 2003",auth:"MAIJ",wit:"2 adult Muslim witnesses",reg:"MAIJ provides Wasiat drafting and registration services",caveats:["Johor-Singapore cross-border assets require separate legal advice."]},
+  {id:"kelantan",name:"Kelantan",cx:"high",law:"Kelantan Islamic Family Law Enactment 2002",auth:"MAIK",wit:"2 adult Muslim MALE witnesses strongly recommended",reg:"Registration with MAIK",caveats:["⚠️ CONSERVATIVE: Stricter interpretation. Use 2 male witnesses.","PAS-governed state — consult a locally-based Syariah practitioner."]},
+  {id:"terengganu",name:"Terengganu",cx:"high",law:"Terengganu Syariah Inheritance Enactment 2005",auth:"MAIDAM",wit:"2 adult Muslim witnesses; male witnesses strongly preferred",reg:"Registration with MAIDAM",caveats:["⚠️ CONSERVATIVE: Local Syariah practitioner review strongly recommended."]},
+  {id:"pahang",name:"Pahang",cx:"standard",law:"Islamic Family Law (Pahang) Enactment 2005",auth:"MUIP",wit:"2 adult Muslim witnesses",reg:"MUIP Wasiat registration recommended",caveats:["Large state — ensure executor is accessible across districts."]},
+  {id:"perak",name:"Perak",cx:"standard",law:"Islamic Family Law (Perak) Enactment 2004",auth:"MAIPk",wit:"2 adult Muslim witnesses",reg:"MAIPk Wasiat services available",caveats:["Harta sepencarian claims are common — resolve before Wasiat execution."]},
+  {id:"kedah",name:"Kedah",cx:"standard",law:"Kedah Islamic Family Law Enactment 2008",auth:"MAIK (Kedah)",wit:"2 adult Muslim witnesses",reg:"Registration with MAIK",caveats:["Agricultural/padi land may have Land Office restrictions — verify title type."]},
+  {id:"perlis",name:"Perlis",cx:"medium",law:"Perlis Islamic Religious Administration Enactment 2006",auth:"Jabatan Mufti Negeri Perlis",wit:"2 adult Muslim witnesses",reg:"Registration with Jabatan Mufti Perlis",caveats:["Perlis strictly follows the Shafi'i school — unusual provisions should be pre-cleared."]},
+  {id:"penang",name:"Pulau Pinang",cx:"standard",law:"Islamic Family Law (Penang) Enactment 2004",auth:"MAINPP",wit:"2 adult Muslim witnesses",reg:"MAINPP Wasiat registration available",caveats:["Urban state — complex estates with business assets are common."]},
+  {id:"melaka",name:"Melaka",cx:"standard",law:"Islamic Family Law (Melaka) Enactment 2002",auth:"MAIM",wit:"2 adult Muslim witnesses",reg:"MAIM Wasiat registration",caveats:["Smaller state — Syariah court administration is relatively efficient."]},
+  {id:"sabah",name:"Sabah",cx:"high",law:"Sabah Islamic Family Law Enactment 2004",auth:"MUIS Sabah",wit:"2 adult Muslim witnesses",reg:"Registration with MUIS Sabah",caveats:["⚠️ NCR land governed by Sabah Land Ordinance — NOT Faraid/Wasiat.","Strongly recommend a Kota Kinabalu-based Syariah practitioner."]},
+  {id:"sarawak",name:"Sarawak",cx:"high",law:"Islamic Family Law Ordinance (Sarawak) 2001",auth:"Majlis Islam Sarawak (MIS)",wit:"2 adult Muslim witnesses",reg:"Registration with MIS",caveats:["⚠️ Sarawak NCR Land is ENTIRELY outside Faraid/Wasiat jurisdiction.","⚠️ STRONGLY RECOMMENDED: Consult a Kuching-based Syariah practitioner before proceeding."]},
+  {id:"wp-putrajaya",name:"WP Putrajaya",cx:"standard",law:"Administration of Islamic Law (Federal Territories) Act 1993",auth:"JAWI",wit:"2 adult Muslim witnesses",reg:"JAWI Wasiat registration available",caveats:["Same federal law as WP KL. Government-heavy — KWAP nominations need separate arrangements."]},
+  {id:"wp-labuan",name:"WP Labuan",cx:"high",law:"Administration of Islamic Law (Federal Territories) Act 1993",auth:"JAWI / Labuan Syariah Court",wit:"2 adult Muslim witnesses",reg:"Registration with Labuan Syariah Court",caveats:["⚠️ Labuan IBFC offshore assets CANNOT be covered by a Wasiat.","Labuan Syariah court capacity is limited — estate matters may experience significant delays."]}
+];
+const CXC={high:{bg:"#fef2f2",b:"#fca5a5",c:"#b91c1c",lbl:"⚠️ Complex — Professional review required"},medium:{bg:"#fffbeb",b:"#fbbf24",c:"#78350f",lbl:"⚠️ Additional considerations apply"},standard:{bg:"#f0fdf4",b:"#86efac",c:"#166534",lbl:"✓ Standard state law applies"}};
+
+// ── SHARED FORM COMPONENTS ───────────────────────────
+const IS={width:"100%",padding:"10px 13px",border:"1.5px solid #d1d9e6",borderRadius:7,fontSize:13.5,color:"#111827",background:"#f8fafc",fontFamily:"inherit",boxSizing:"border-box"};
+function Field({label,hint,req,type="text",opts,readOnly,dflt,children,fid}){
+  const[v,sv]=useState(dflt||"");
+  return(<div style={{marginBottom:18}}>
+    <label style={{display:"block",fontSize:10.5,fontWeight:700,color:"#4b5563",marginBottom:5,letterSpacing:"0.07em",textTransform:"uppercase"}}>{label}{req&&<span style={{color:"#b91c1c",marginLeft:3}}>*</span>}</label>
+    {children||(type==="select"?<select id={fid} value={v} onChange={e=>sv(e.target.value)} style={IS}><option value="">Select…</option>{opts?.map(o=><option key={o}>{o}</option>)}</select>:type==="textarea"?<textarea id={fid} value={v} onChange={e=>sv(e.target.value)} rows={3} style={{...IS,resize:"vertical"}}/>:<input id={fid} type={type} value={readOnly?dflt:v} onChange={e=>sv(e.target.value)} readOnly={readOnly} style={{...IS,background:readOnly?"#eaf0f8":IS.background}}/>)}
+    {hint&&<div style={{fontSize:11.5,color:"#6b7280",marginTop:4,lineHeight:1.5}}>{hint}</div>}
+  </div>);
+}
+function R2({c}){return<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>{c}</div>;}
+function Dv(){return<div style={{height:1,background:"#e5eaf2",margin:"20px 0"}}/>;}
+function Alrt({type,children}){
+  const m={warn:{bg:"#fffbeb",b:"#fbbf24",c:"#92400e",icon:"⚠️"},critical:{bg:"#fef2f2",b:"#fca5a5",c:"#7f1d1d",icon:"🚨"},info:{bg:"#eff6ff",b:"#93c5fd",c:"#1e3a8a",icon:"ℹ️"},green:{bg:"#f0fdf4",b:"#86efac",c:"#14532d",icon:"✓"}}[type]||{bg:"#eff6ff",b:"#93c5fd",c:"#1e3a8a",icon:"ℹ️"};
+  return<div style={{background:m.bg,border:`1.5px solid ${m.b}`,borderRadius:8,padding:"11px 15px",marginBottom:14,fontSize:13,color:m.c,lineHeight:1.65,display:"flex",gap:9,alignItems:"flex-start"}}><span style={{flexShrink:0}}>{m.icon}</span><div>{children}</div></div>;
+}
+function StepBar({steps,cur,navy,gold}){
+  return(<div style={{display:"flex",alignItems:"center",background:"#fff",border:"1px solid #d1d9e6",borderRadius:10,padding:"10px 12px",marginBottom:24,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+    {steps.map((s,i)=>(<React.Fragment key={i}>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"6px 4px",borderRadius:8,background:i===cur?navy:i<cur?"rgba(14,34,64,0.07)":"transparent"}}>
+        <div style={{width:26,height:26,borderRadius:"50%",background:i===cur?gold:i<cur?"#163158":"#e5e7eb",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:i===cur?navy:i<cur?"#fff":"#6b7280"}}>{i<cur?"✓":i+1}</div>
+        <div style={{fontSize:10,fontWeight:600,textAlign:"center",color:i===cur?"rgba(255,255,255,0.9)":i<cur?"#163158":"#9ca3af",whiteSpace:"nowrap"}}>{s}</div>
+      </div>
+      {i<steps.length-1&&<div style={{height:2,width:6,background:"#d1d9e6",flexShrink:0}}/>}
+    </React.Fragment>))}
+  </div>);
+}
+function FCard({title,desc,children,onBack,onNext,nxtLbl,navy,gold,isLast,lang}){
+  return(<div style={{background:"#fff",border:"1px solid #d1d9e6",borderRadius:12,padding:"26px 30px",boxShadow:"0 2px 16px rgba(0,0,0,0.05)"}}>
+    <h3 style={{fontSize:18,fontWeight:700,color:navy,marginBottom:5}}>{title}</h3>
+    <div style={{fontSize:12.5,color:"#6b7280",fontStyle:"italic",marginBottom:20,paddingBottom:16,borderBottom:"1px solid #e5eaf2"}}>{desc}</div>
+    {children}
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:22,paddingTop:16,borderTop:"1px solid #e5eaf2"}}>
+      {onBack?<button onClick={onBack} style={{background:"none",border:"1.5px solid #d1d9e6",color:"#374151",padding:"9px 20px",borderRadius:7,fontSize:13,cursor:"pointer"}}>{t("formBack",lang)}</button>:<div/>}
+      <button onClick={onNext} style={{background:isLast?gold:navy,color:isLast?navy:"#fff",border:"none",padding:"10px 26px",borderRadius:7,fontSize:13.5,fontWeight:700,cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>{nxtLbl||t("formCont",lang)}</button>
+    </div>
+  </div>);
+}
+function Guide({prompts,navy,gold,lang}){
+  const{cfg}=useEdit();
+  const[op,sOp]=useState(null);
+  if(!cfg.vis.guidePanel)return null;
+  return(<div style={{position:"sticky",top:72}}>
+    <div style={{background:navy,borderRadius:12,padding:"16px 17px",boxShadow:"0 4px 20px rgba(14,34,64,0.25)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+        <div style={{width:30,height:30,background:"rgba(201,168,76,0.18)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{"💡"}</div>
+        <span style={{fontWeight:700,fontSize:13,color:"#e0c47a"}}>{t("guideTitle",lang)}</span>
+      </div>
+      {prompts.map((p,i)=>(
+        <div key={i} onClick={()=>sOp(op===i?null:i)} style={{background:op===i?"rgba(201,168,76,0.12)":"rgba(255,255,255,0.06)",borderLeft:`3px solid ${gold}`,borderRadius:"0 7px 7px 0",padding:"9px 12px",marginBottom:7,cursor:"pointer"}}>
+          <div style={{fontSize:12,fontWeight:600,color:"#e0c47a",display:"flex",justifyContent:"space-between",gap:6}}>
+            <span>{p.q}</span><span style={{flexShrink:0,transform:op===i?"rotate(180deg)":"none",transition:"0.2s"}}>{"▾"}</span>
+          </div>
+          {op===i&&<div style={{fontSize:11.5,color:"rgba(255,255,255,0.7)",lineHeight:1.55,marginTop:7}}>{p.a}</div>}
+        </div>
+      ))}
+    </div>
+  </div>);
+}
+
+// ── LANGUAGE TOGGLE ─────────────────────────────────
+function LangToggle({onDark=true}){
+  const{lang,setLang}=useLang();
+  return(
+    <div className="lang-pill">
+      {["en","bm","zh"].map(l=>(
+        <button key={l} className={lang===l?"active":""} onClick={()=>setLang(l)}
+          style={{color:onDark?(lang===l?"#e0c47a":"rgba(255,255,255,0.5)"):(lang===l?"#0e2240":"#6b7280"),fontWeight:lang===l?700:500}}>
+          {l==="en"?"EN":l==="bm"?"BM":"中文"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── NAVBAR ──────────────────────────────────────────
+function NavBar({setPage,em,setEm}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  return(
+    <nav style={{background:cfg.navy,padding:"0 28px",display:"flex",alignItems:"center",justifyContent:"space-between",height:56,position:"sticky",top:0,zIndex:200,boxShadow:"0 2px 16px rgba(0,0,0,0.35)"}}>
+      <span style={{fontFamily:"Georgia,serif",fontWeight:700,fontSize:14,color:cfg.gold,cursor:"pointer",letterSpacing:"0.01em"}} onClick={()=>setPage("landing")}>{cfg.firmName}</span>
+      <div style={{display:"flex",gap:12,alignItems:"center"}}>
+        <LangToggle/>
+        <span style={{fontSize:12,color:"rgba(255,255,255,0.5)",cursor:"pointer"}} onClick={()=>setPage("landing")}>{t("navHome",lang)}</span>
+        <button onClick={()=>setPage("track")} style={{background:cfg.gold,color:cfg.navy,border:"none",borderRadius:6,padding:"7px 15px",fontWeight:700,fontSize:12.5,cursor:"pointer"}}>{t("navCTA",lang)}</button>
+        <button onClick={()=>setEm(!em)} style={{background:em?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.1)",color:em?cfg.navy:"rgba(255,255,255,0.7)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,padding:"6px 11px",fontSize:11.5,fontWeight:600,cursor:"pointer"}}>{em?t("navClose",lang):t("navEdit",lang)}</button>
+      </div>
+    </nav>
+  );
+}
+
+// ── LANDING ─────────────────────────────────────────
+function Landing({setPage}){
+  const{cfg,setCfg,em}=useEdit();const{lang}=useLang();
+  const v=cfg.vis;
+  const[fq,sFq]=useState(null);
+  const whyCards=tA("whyCards",lang);
+  const whyTops=[cfg.navy,cfg.gold,"#b91c1c"];
+  const legalRefs=tA("legalRefs",lang);
+  const faqs=tA("faqs",lang);
+  const pricingFeat=tA("pricingFeat",lang);
+  const heroChecks={en:["Bar Council Registered","Wills Act 1959 Compliant","NRIC Data Encrypted","Wasiat Available for Muslims"],bm:["Berdaftar Majlis Peguam","Mematuhi Akta Wasiat 1959","Data MyKad Dienkripsi","Wasiat Tersedia untuk Muslim"],zh:["律师公会注册","符周1959年遗嘱法令","身份证数据加密","穆斯林遗嘱服务"]}[lang]||[];
+  const howSteps=tA("howSteps",lang);
+  const serif=cfg.fontFamily.includes("Playfair")||cfg.fontFamily.includes("Lora")?cfg.fontFamily:"Georgia,serif";
+  const TI=(f,sty)=>em?<input value={cfg[f]} onChange={e=>setCfg(c=>({...c,[f]:e.target.value}))} className="em-hl" style={{...sty,border:"none",padding:"2px 6px",fontFamily:"inherit",outline:"none"}}/>:<span style={sty}>{cfg[f]}</span>;
+  const tagline=lang==="en"?(em?<textarea value={cfg.tagline} onChange={e=>setCfg(c=>({...c,tagline:e.target.value}))} className="em-hl" rows={2} style={{fontSize:"inherit",fontWeight:700,lineHeight:1.2,width:"100%",resize:"none",fontFamily:serif,padding:4,color:"#fff",border:"none",outline:"none",background:"transparent"}}/>:cfg.tagline.split("\n").map((l,i)=><div key={i}>{l}</div>)):t("tagline",lang).split("\n").map((l,i)=><div key={i}>{l}</div>);
+  const heroSub=lang==="en"?(em?<textarea value={cfg.heroSub} onChange={e=>setCfg(c=>({...c,heroSub:e.target.value}))} className="em-hl" rows={3} style={{fontSize:"inherit",width:"100%",resize:"none",fontFamily:"inherit",padding:4,color:"rgba(255,255,255,0.75)",border:"none",outline:"none",background:"transparent"}}/>:cfg.heroSub):t("heroSub",lang);
+  return(<div>
+    <EditBanner/>
+    {/* HERO */}
+    <div style={{background:`linear-gradient(150deg,${cfg.navy} 0%,#16345c 55%,#1c4a7a 100%)`,padding:"60px 36px 52px"}}>
+      <div style={{maxWidth:1080,margin:"0 auto",display:"grid",gridTemplateColumns:v.heroCard?"1fr 320px":"1fr",gap:48,alignItems:"center"}}>
+        <div>
+          {v.heroBadge&&<div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",color:"#e0c47a",fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"5px 14px",borderRadius:24,marginBottom:20}}>
+            {lang==="en"?TI("badge",{color:"#e0c47a",fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",background:"transparent"}):t("badge",lang)}
+          </div>}
+          <div style={{fontSize:38,fontWeight:700,color:"#fff",lineHeight:1.2,marginBottom:16,fontFamily:serif}}>{tagline}</div>
+          <div style={{color:"rgba(255,255,255,0.72)",fontSize:15.5,marginBottom:26,maxWidth:510,lineHeight:1.7}}>{heroSub}</div>
+          <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:28,flexWrap:"wrap"}}>
+            <div style={{background:cfg.gold,color:cfg.navy,fontWeight:700,fontSize:26,padding:"10px 20px",borderRadius:8,fontFamily:"Georgia,serif",boxShadow:"0 4px 14px rgba(201,168,76,0.35)"}}>
+              RM {lang==="en"?TI("price",{color:cfg.navy,fontWeight:700,fontSize:26,fontFamily:"Georgia,serif",width:55}):cfg.price}
+            </div>
+            <div style={{fontSize:12.5,color:"rgba(255,255,255,0.65)",lineHeight:1.6}}>
+              <strong style={{color:"#e0c47a",display:"block"}}>{lang==="en"?TI("priceNote",{color:"#e0c47a",fontSize:12.5,fontWeight:700}):t("priceNote",lang)}</strong>
+              {t("heroSubLine",lang)}
+            </div>
+          </div>
+          <button onClick={()=>setPage("track")} style={{background:cfg.gold,color:cfg.navy,border:"none",borderRadius:8,padding:"14px 32px",fontSize:16,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 18px rgba(201,168,76,0.45)",letterSpacing:"0.02em"}}>{t("heroCTA",lang)}</button>
+          {v.heroChecks&&<div style={{display:"flex",flexWrap:"wrap",gap:"8px 20px",marginTop:22}}>
+            {heroChecks.map((c,i)=>v[`heroCheck${i}`]&&<div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.55)"}}>
+              <span style={{color:cfg.gold}}>{"✓"}</span>{c}
+            </div>)}
+          </div>}
+        </div>
+        {v.heroCard&&<div style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:14,padding:"24px 22px"}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#e0c47a",marginBottom:16,letterSpacing:"0.04em",textTransform:"uppercase"}}>{t("howTitle",lang)}</div>
+          {howSteps.map((s,i)=><div key={i} style={{display:"flex",gap:13,alignItems:"flex-start",marginBottom:i<howSteps.length-1?14:0}}>
+            <div style={{width:24,height:24,borderRadius:"50%",background:cfg.gold,color:cfg.navy,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.78)",lineHeight:1.55,paddingTop:3}}>{s}</div>
+          </div>)}
+        </div>}
+      </div>
+    </div>
+    {/* TRUST BAR */}
+    {v.trustBar&&<div style={{background:cfg.navy,padding:"16px 36px"}}>
+      <div style={{maxWidth:1080,margin:"0 auto",display:"flex",justifyContent:"space-around",flexWrap:"wrap",gap:16}}>
+        {[{k:"s1",val:"s1v"},{k:"s2",val:"s2v"},{k:"s3",val:"s3v"},{k:"s4",val:"s4v"}].map(({k,val},i)=>v[`trustStat${i}`]&&(
+          <div key={i} style={{textAlign:"center"}}>
+            <div style={{fontSize:22,fontWeight:700,color:cfg.gold,fontFamily:"Georgia,serif"}}>{lang==="en"?TI(val,{color:cfg.gold,fontWeight:700,fontSize:22,fontFamily:"Georgia,serif",width:65}):cfg[val]}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginTop:2,textTransform:"uppercase",letterSpacing:"0.06em"}}>{t(k+"l",lang)}</div>
+          </div>
+        ))}
+      </div>
+    </div>}
+    {/* WHY */}
+    {v.whySection&&<div style={{padding:"56px 36px",background:"#f8fafd"}}>
+      <div style={{maxWidth:1080,margin:"0 auto"}}>
+        <h2 style={{fontSize:28,fontWeight:700,color:cfg.navy,marginBottom:10,fontFamily:serif}}>{t("whyTitle",lang)}</h2>
+        <p style={{fontSize:15,color:"#4b5563",marginBottom:32,lineHeight:1.7,maxWidth:620}}>{t("whySub",lang)}</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+          {whyCards.map((c,i)=>v[`whyCard${i}`]&&(
+            <div key={i} className="tc" style={{background:"#fff",border:"1px solid #d1d9e6",borderRadius:12,padding:"22px 22px",borderTop:`4px solid ${whyTops[i]}`,boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}}>
+              <div style={{fontSize:28,marginBottom:12}}>{c.icon}</div>
+              <h3 style={{fontSize:15,fontWeight:700,color:cfg.navy,marginBottom:9}}>{c.title}</h3>
+              <p style={{fontSize:13.5,color:"#374151",lineHeight:1.65}}>{c.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>}
+    {/* PRICING */}
+    {v.pricingSection&&<div style={{padding:"52px 36px",background:cfg.navy}}>
+      <div style={{maxWidth:1080,margin:"0 auto"}}>
+        <h2 style={{fontSize:27,fontWeight:700,color:cfg.gold,marginBottom:7,fontFamily:serif}}>{t("pricingTitle",lang)}</h2>
+        <div style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:14,padding:"28px 32px",maxWidth:540,display:"flex",gap:28,alignItems:"flex-start"}}>
+          <div style={{flex:1}}>
+            <div style={{display:"inline-block",background:"rgba(201,168,76,0.2)",color:"#e0c47a",fontSize:10.5,fontWeight:700,padding:"4px 10px",borderRadius:20,marginBottom:12,letterSpacing:"0.06em"}}>{t("pricingBadge",lang)}</div>
+            <div style={{fontSize:17,fontWeight:700,color:"#fff",marginBottom:5}}>{t("pricingPlan",lang)}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.45)",marginBottom:18}}>{t("pricingDesc",lang)}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {pricingFeat.map((f,i)=>v[`pricingF${i}`]&&<div key={i} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,0.8)"}}>
+                <span style={{color:cfg.gold,fontSize:14,flexShrink:0}}>{"✓"}</span>{f}
+              </div>)}
+            </div>
+          </div>
+          <div style={{textAlign:"center",flexShrink:0}}>
+            <div style={{fontFamily:"Georgia,serif",fontSize:40,fontWeight:700,color:cfg.navy,lineHeight:1,background:cfg.gold,padding:"10px 18px",borderRadius:10}}>RM {cfg.price}</div>
+            <div style={{fontSize:11.5,color:"rgba(255,255,255,0.45)",marginTop:8}}>{t("pricingFee",lang)}</div>
+            <button onClick={()=>setPage("track")} style={{marginTop:14,background:cfg.gold,color:cfg.navy,border:"none",borderRadius:7,padding:"11px 20px",fontSize:13.5,fontWeight:700,cursor:"pointer",display:"block",width:"100%",boxShadow:"0 3px 10px rgba(201,168,76,0.35)"}}>{t("pricingBtn",lang)}</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+    {/* LEGAL */}
+    {v.legalSection&&<div style={{padding:"48px 36px",background:"#f0f4fa"}}>
+      <div style={{maxWidth:1080,margin:"0 auto"}}>
+        <h2 style={{fontSize:22,fontWeight:700,color:cfg.navy,marginBottom:7,fontFamily:serif}}>{t("legalTitle",lang)}</h2>
+        <p style={{color:"#6b7280",fontSize:13.5,marginBottom:22}}>{t("legalSub",lang)}</p>
+        <div style={{display:"flex",flexDirection:"column",gap:8,maxWidth:640}}>
+          {legalRefs.map((lr,i)=>v[`legalRef${i}`]&&<a key={i} href={lr.url} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",border:"1px solid #d1d9e6",borderRadius:8,background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.03)",textDecoration:"none",cursor:"pointer",transition:"box-shadow 0.15s,border-color 0.15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 3px 12px rgba(0,0,0,0.1)";e.currentTarget.style.borderColor="#93c5fd";}}
+            onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.03)";e.currentTarget.style.borderColor="#d1d9e6";}}>
+            <div style={{display:"flex",alignItems:"center",gap:13}}>
+              <span style={{fontSize:16}}>{lr.icon}</span>
+              <div><div style={{fontSize:13,fontWeight:600,color:cfg.navy}}>{lr.label}</div><div style={{fontSize:11.5,color:"#9ca3af",marginTop:2}}>{lr.sub}</div></div>
+            </div>
+            <span style={{color:cfg.gold,fontSize:15}}>{"↗"}</span>
+          </a>)}
+        </div>
+      </div>
+    </div>}
+    {/* FAQ */}
+    {v.faqSection&&<div style={{padding:"52px 36px",background:"#fff"}}>
+      <div style={{maxWidth:1080,margin:"0 auto"}}>
+        <h2 style={{fontSize:27,fontWeight:700,color:cfg.navy,marginBottom:26,fontFamily:serif}}>{t("faqTitle",lang)}</h2>
+        <div style={{maxWidth:720}}>
+          {faqs.map((f,i)=>(
+            <div key={i} style={{border:"1px solid #d1d9e6",borderRadius:9,marginBottom:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.03)"}}>
+              <div onClick={()=>sFq(fq===i?null:i)} style={{padding:"14px 18px",fontWeight:600,fontSize:13.5,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",color:cfg.navy,background:fq===i?"#f0f4fa":"#fff"}}>
+                <span>{f.q}</span><span style={{color:cfg.gold,fontSize:18,flexShrink:0,fontWeight:400}}>{fq===i?"−":"+"}</span>
+              </div>
+              {fq===i&&<div style={{padding:"4px 18px 14px",fontSize:13.5,color:"#374151",lineHeight:1.7,borderTop:"1px solid #e5eaf2"}}>{f.a}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>}
+    {/* FOOTER */}
+    {v.footerSection&&<div style={{background:cfg.navy,padding:"30px 36px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:20,fontSize:13}}>
+      <div>
+        <div style={{fontFamily:"Georgia,serif",color:cfg.gold,fontSize:16,fontWeight:700,marginBottom:10}}>{cfg.firmName}</div>
+        <div style={{color:"rgba(255,255,255,0.42)",lineHeight:1.8,fontSize:13}}>
+          {em?<div style={{display:"flex",flexDirection:"column",gap:5}}>
+            {[["address",280],["phone",170],["email",230]].map(([f,w])=>(
+              <input key={f} value={cfg[f]} onChange={e=>setCfg(c=>({...c,[f]:e.target.value}))} className="em-hl" style={{color:"rgba(255,255,255,0.42)",fontSize:12.5,fontFamily:"inherit",padding:"2px 5px",border:"none",outline:"none",width:w,background:"transparent"}}/>
+            ))}
+          </div>:<>{cfg.address}<br/>{cfg.phone}{" · "}{cfg.email}</>}
+        </div>
+      </div>
+      <div style={{textAlign:"right",color:"rgba(255,255,255,0.42)",lineHeight:1.8,fontSize:12.5}}>
+        {t("footerTag",lang).split("\n").map((l,i)=>i===0?<strong key={i} style={{color:"#e0c47a",display:"block"}}>{l}</strong>:<span key={i} style={{display:"block"}}>{l}</span>)}
+        <div style={{fontSize:10.5,opacity:0.35,marginTop:8}}>{"©"} 2026 {cfg.firmName}</div>
+      </div>
+    </div>}
+  </div>);
+}
+
+// ── TRACK SELECTOR ──────────────────────────────────
+const WGREEN="#1B5C38";
+const WGLIGHT="#EBF5EE";
+const WGBORDER="#A3CDB9";
+function TrackSel({setPage,setTrack}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  const serif=cfg.fontFamily.includes("Playfair")||cfg.fontFamily.includes("Lora")?cfg.fontFamily:"Georgia,serif";
+  return(<div style={{minHeight:"78vh",display:"flex",alignItems:"center",justifyContent:"center",padding:40,background:"#f0f4fa"}}>
+    <div style={{maxWidth:660,width:"100%"}}>
+      <EditBanner/>
+      <div style={{textAlign:"center",marginBottom:36,marginTop:12}}>
+        <h2 style={{fontSize:28,fontWeight:700,color:cfg.navy,marginBottom:10,fontFamily:serif}}>{t("trkHead",lang)}</h2>
+        <p style={{fontSize:14.5,color:"#4b5563",lineHeight:1.7,maxWidth:520,margin:"0 auto"}}>{t("trkSub",lang)}</p>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
+        {/* Non-Muslim card */}
+        <div className="tc" onClick={()=>{setTrack("nm");setPage("nm-caveats")}} style={{background:"#fff",border:`2px solid ${cfg.navy}`,borderRadius:14,padding:"26px 22px",cursor:"pointer"}}>
+          <div style={{fontSize:34,marginBottom:13}}>{"📜"}</div>
+          <h3 style={{fontFamily:serif,fontSize:17,fontWeight:700,color:cfg.navy,marginBottom:8}}>{t("trkNMTitle",lang)}</h3>
+          <div style={{background:"#dbeafe",color:"#1e40af",fontSize:9.5,fontWeight:700,padding:"3px 8px",borderRadius:4,display:"inline-block",marginBottom:11,letterSpacing:"0.06em"}}>{t("trkNMBadge",lang)}</div>
+          <p style={{fontSize:13,color:"#374151",lineHeight:1.65,marginBottom:16}}>{t("trkNMDesc",lang)}</p>
+          <div style={{background:cfg.navy,color:"#fff",borderRadius:7,padding:"10px 0",textAlign:"center",fontSize:13,fontWeight:700}}>{t("trkNMBtn",lang)}</div>
+        </div>
+        {/* Muslim / Wasiat card — green theme */}
+        <div className="tc" onClick={()=>{setTrack("m");setPage("m-caveats")}} style={{background:WGLIGHT,border:`2px solid ${WGREEN}`,borderRadius:14,padding:"26px 22px",cursor:"pointer"}}>
+          <div style={{fontSize:34,marginBottom:13}}>{"📿"}</div>
+          <h3 style={{fontFamily:serif,fontSize:17,fontWeight:700,color:WGREEN,marginBottom:8}}>{t("trkMTitle",lang)}</h3>
+          <div style={{background:"#C8E6D0",color:WGREEN,fontSize:9.5,fontWeight:700,padding:"3px 8px",borderRadius:4,display:"inline-block",marginBottom:11,letterSpacing:"0.06em"}}>{t("trkMBadge",lang)}</div>
+          <p style={{fontSize:13,color:"#374151",lineHeight:1.65,marginBottom:16}}>{t("trkMDesc",lang)}</p>
+          <div style={{background:WGREEN,color:"#fff",borderRadius:7,padding:"10px 0",textAlign:"center",fontSize:13,fontWeight:700}}>{t("trkMBtn",lang)}</div>
+        </div>
+      </div>
+      <div style={{background:"#fffbeb",border:"1.5px solid #fbbf24",borderRadius:9,padding:"12px 16px",fontSize:13,color:"#78350f",lineHeight:1.65}}>
+        <strong>{t("trkNoteSure",lang)} </strong>{t("trkNote",lang)}
+      </div>
+    </div>
+  </div>);
+}
+
+// ── NM CAVEATS ──────────────────────────────────────
+function NMCaveats({setPage}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  const[a1,sA1]=useState(false);const[a2,sA2]=useState(false);const[a3,sA3]=useState(false);
+  const ok=a1&&a2&&a3;
+  const cards=tA("nmcCards",lang);
+  const acks=tA("nmcAck",lang);
+  const serif=cfg.fontFamily.includes("Playfair")||cfg.fontFamily.includes("Lora")?cfg.fontFamily:"Georgia,serif";
+  return(<div style={{padding:"40px 36px",background:"#f0f4fa"}}>
+    <div style={{maxWidth:860,margin:"0 auto"}}>
+      <EditBanner/>
+      <div style={{background:"#eff6ff",border:"2px solid #93c5fd",borderRadius:13,padding:"18px 22px",marginBottom:26,marginTop:12,display:"flex",gap:14,alignItems:"flex-start"}}>
+        <span style={{fontSize:22,flexShrink:0}}>{"📋"}</span>
+        <div>
+          <h2 style={{fontFamily:serif,fontSize:21,fontWeight:700,color:"#1e3a8a",marginBottom:7}}>{t("nmcHead",lang)}</h2>
+          <p style={{fontSize:13.5,color:"#1e40af",lineHeight:1.65}}>{t("nmcIntro",lang)}</p>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:24}}>
+        {cards.map((c,i)=>(
+          <div key={i} style={{background:"#fff",border:"1px solid #d1d9e6",borderRadius:10,padding:"16px 18px",borderTop:`4px solid ${c.bt}`,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            <div style={{background:c.bc,color:c.bt,fontSize:9.5,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",padding:"3px 8px",borderRadius:4,display:"inline-block",marginBottom:8}}>{c.badge}</div>
+            <h4 style={{fontSize:13.5,fontWeight:700,color:cfg.navy,marginBottom:7}}>{c.title}</h4>
+            <p style={{fontSize:12.5,color:"#374151",lineHeight:1.6}}>{c.body}</p>
+          </div>
+        ))}
+      </div>
+      <div style={{background:"#fff",border:"1px solid #d1d9e6",borderRadius:10,padding:"20px 22px",marginBottom:22,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+        <h3 style={{fontFamily:serif,fontSize:15,fontWeight:700,color:cfg.navy,marginBottom:14}}>{t("nmcAckLabel",lang)}</h3>
+        {[{s:a1,fn:sA1},{s:a2,fn:sA2},{s:a3,fn:sA3}].map((a,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"11px 0",borderBottom:i<2?"1px solid #f0f4fa":"none"}}>
+            <div onClick={()=>a.fn(!a.s)} style={{width:20,height:20,border:`2px solid ${a.s?cfg.navy:"#c4cdd8"}`,borderRadius:5,background:a.s?cfg.navy:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:3,cursor:"pointer",transition:"all 0.15s"}}>
+              {a.s&&<span style={{color:cfg.gold,fontWeight:700,fontSize:12,lineHeight:1}}>{"✓"}</span>}
+            </div>
+            <span style={{fontSize:13.5,color:"#374151",lineHeight:1.65,flex:1}}>{acks[i]}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+        <button onClick={()=>setPage("track")} style={{background:"none",border:"1.5px solid #d1d9e6",color:"#374151",padding:"9px 20px",borderRadius:7,fontSize:13.5,cursor:"pointer"}}>{t("formBack",lang)}</button>
+        <button disabled={!ok} onClick={()=>setPage("nm-form")} style={{background:ok?cfg.navy:"#e5e7eb",color:ok?"#fff":"#9ca3af",border:"none",padding:"11px 26px",borderRadius:7,fontSize:13.5,fontWeight:700,cursor:ok?"pointer":"not-allowed",transition:"all 0.2s",boxShadow:ok?"0 2px 10px rgba(14,34,64,0.2)":"none"}}>
+          {ok?t("nmcBtn",lang):t("nmcPleaseAck",lang)}
+        </button>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── MUSLIM CAVEATS ── green theme ───────────────────
+function MCaveats({setPage}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  const[a1,sA1]=useState(false);const[a2,sA2]=useState(false);const[a3,sA3]=useState(false);
+  const ok=a1&&a2&&a3;
+  const cards=tA("mcCards",lang);
+  const acks=tA("mcAck",lang);
+  const serif=cfg.fontFamily.includes("Playfair")||cfg.fontFamily.includes("Lora")?cfg.fontFamily:"Georgia,serif";
+  return(<div style={{padding:"40px 36px",background:"#f0f6f3"}}>
+    <div style={{maxWidth:860,margin:"0 auto"}}>
+      <EditBanner/>
+      <div style={{background:WGLIGHT,border:`2px solid ${WGREEN}`,borderRadius:13,padding:"18px 22px",marginBottom:26,marginTop:12,display:"flex",gap:14,alignItems:"flex-start"}}>
+        <span style={{fontSize:22,flexShrink:0,color:WGREEN}}>{"☪️"}</span>
+        <div>
+          <h2 style={{fontFamily:serif,fontSize:21,fontWeight:700,color:WGREEN,marginBottom:7}}>{t("mcHead",lang)}</h2>
+          <p style={{fontSize:13.5,color:"#1a5038",lineHeight:1.65}}>{t("mcIntro",lang)}</p>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:24}}>
+        {cards.map((c,i)=>(
+          <div key={i} style={{background:"#fff",border:"1px solid #d1d9e6",borderRadius:10,padding:"16px 18px",borderTop:`4px solid ${c.bt}`,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            <div style={{background:c.bc,color:c.bt,fontSize:9.5,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",padding:"3px 8px",borderRadius:4,display:"inline-block",marginBottom:8}}>{c.badge}</div>
+            <h4 style={{fontSize:13.5,fontWeight:700,color:WGREEN,marginBottom:7}}>{c.title}</h4>
+            <p style={{fontSize:12.5,color:"#374151",lineHeight:1.6}}>{c.body}</p>
+          </div>
+        ))}
+      </div>
+      <div style={{background:"#fff",border:`1px solid ${WGBORDER}`,borderRadius:10,padding:"20px 22px",marginBottom:22,boxShadow:"0 1px 6px rgba(27,92,56,0.06)"}}>
+        <h3 style={{fontFamily:serif,fontSize:15,fontWeight:700,color:WGREEN,marginBottom:14}}>{t("mcAckLabel",lang)}</h3>
+        {[{s:a1,fn:sA1},{s:a2,fn:sA2},{s:a3,fn:sA3}].map((a,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"11px 0",borderBottom:i<2?"1px solid #e8f5ee":"none"}}>
+            <div onClick={()=>a.fn(!a.s)} style={{width:20,height:20,border:`2px solid ${a.s?WGREEN:"#c4cdd8"}`,borderRadius:5,background:a.s?WGREEN:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:3,cursor:"pointer",transition:"all 0.15s"}}>
+              {a.s&&<span style={{color:"#c9a84c",fontWeight:700,fontSize:12,lineHeight:1}}>{"✓"}</span>}
+            </div>
+            <span style={{fontSize:13.5,color:"#374151",lineHeight:1.65,flex:1}}>{acks[i]}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+        <button onClick={()=>setPage("track")} style={{background:"none",border:"1.5px solid #d1d9e6",color:"#374151",padding:"9px 20px",borderRadius:7,fontSize:13.5,cursor:"pointer"}}>{t("formBack",lang)}</button>
+        <button disabled={!ok} onClick={()=>setPage("m-state")} style={{background:ok?WGREEN:"#e5e7eb",color:ok?"#fff":"#9ca3af",border:"none",padding:"11px 26px",borderRadius:7,fontSize:13.5,fontWeight:700,cursor:ok?"pointer":"not-allowed",transition:"all 0.2s",boxShadow:ok?"0 2px 10px rgba(27,92,56,0.25)":"none"}}>
+          {ok?t("mcBtn",lang):t("mcPleaseAck",lang)}
+        </button>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── MUSLIM STATE ── green theme ──────────────────────
+function MState({setPage,ss,setSS}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  const sel=STATES.find(s=>s.id===ss);
+  const cx=sel?CXC[sel.cx]:null;
+  const serif=cfg.fontFamily.includes("Playfair")||cfg.fontFamily.includes("Lora")?cfg.fontFamily:"Georgia,serif";
+  return(<div style={{padding:"40px 36px",background:"#f0f6f3"}}>
+    <div style={{maxWidth:680,margin:"0 auto"}}>
+      <EditBanner/>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,marginTop:12}}>
+        <div style={{width:4,height:28,background:WGREEN,borderRadius:2}}/>
+        <h2 style={{fontFamily:serif,fontSize:26,fontWeight:700,color:WGREEN}}>{t("msHead",lang)}</h2>
+      </div>
+      <p style={{fontSize:14,color:"#374151",lineHeight:1.65,marginBottom:24,paddingLeft:14}}>{t("msSub",lang)}</p>
+      <div style={{background:"#fff",border:`1px solid ${WGBORDER}`,borderRadius:10,padding:"20px 22px",marginBottom:20,boxShadow:"0 1px 6px rgba(27,92,56,0.07)"}}>
+        <select value={ss} onChange={e=>setSS(e.target.value)} style={{...IS,border:`1.5px solid ${WGBORDER}`,marginBottom:0}}>
+          <option value="">{t("msSelect",lang)}</option>
+          {STATES.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      </div>
+      {sel&&cx&&<div style={{background:cx.bg,border:`1.5px solid ${cx.b}`,borderRadius:9,padding:"12px 16px",marginBottom:18,fontSize:13,color:cx.c,fontWeight:600}}>{cx.lbl}</div>}
+      {sel&&<div style={{background:"#fff",border:`1px solid ${WGBORDER}`,borderRadius:10,padding:"18px 22px",marginBottom:20,boxShadow:"0 1px 6px rgba(27,92,56,0.06)"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+          {[["msLaw",sel.law],["msAuth",sel.auth],["msWit",sel.wit],["msReg",sel.reg]].map(([k,v])=>(
+            <div key={k} style={{background:"#f8fcf9",borderRadius:7,padding:"10px 13px",border:`1px solid ${WGBORDER}`}}>
+              <div style={{fontSize:9.5,fontWeight:700,color:WGREEN,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{t(k,lang)}</div>
+              <div style={{fontSize:12.5,color:"#374151",lineHeight:1.5}}>{v}</div>
+            </div>
+          ))}
+        </div>
+        {sel.caveats.length>0&&<div>
+          <div style={{fontSize:10.5,fontWeight:700,color:WGREEN,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:7}}>{t("msCav",lang)}</div>
+          {sel.caveats.map((c,i)=><div key={i} style={{fontSize:12.5,color:"#374151",padding:"6px 10px",background:"#f0f6f3",borderLeft:`3px solid ${WGREEN}`,borderRadius:"0 5px 5px 0",marginBottom:5,lineHeight:1.5}}>{c}</div>)}
+        </div>}
+      </div>}
+      <div style={{display:"flex",justifyContent:"space-between"}}>
+        <button onClick={()=>setPage("m-caveats")} style={{background:"none",border:"1.5px solid #d1d9e6",color:"#374151",padding:"9px 20px",borderRadius:7,fontSize:13.5,cursor:"pointer"}}>{t("formBack",lang)}</button>
+        <button disabled={!ss} onClick={()=>setPage("m-form")} style={{background:ss?WGREEN:"#e5e7eb",color:ss?"#fff":"#9ca3af",border:"none",padding:"11px 26px",borderRadius:7,fontSize:13.5,fontWeight:700,cursor:ss?"pointer":"not-allowed",transition:"all 0.2s",boxShadow:ss?"0 2px 10px rgba(27,92,56,0.25)":"none"}}>
+          {t("msConfirm",lang)}
+        </button>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── WILL DONE SCREEN ─────────────────────────────────
+function WillDone({willHTML,filename,onBack,navy,gold,type}){
+  const{cfg}=useEdit();
+  const isMs=type==="ms";
+  const accent=isMs?"#1B5C38":navy;
+  const bg=isMs?"#f0f6f3":"#f0f4fa";
+  return(<div style={{background:bg,minHeight:"80vh",padding:"48px 36px"}}>
+    <div style={{maxWidth:760,margin:"0 auto"}}>
+      <div style={{background:accent,borderRadius:14,padding:"28px 32px",marginBottom:28,boxShadow:"0 6px 28px rgba(0,0,0,0.18)",textAlign:"center"}}>
+        <div style={{fontSize:44,marginBottom:10}}>{"📜"}</div>
+        <h2 style={{color:"#fff",fontFamily:"Georgia,serif",fontSize:22,fontWeight:700,margin:"0 0 6px"}}>
+          {isMs?"Your Wasiat is Ready":"Your Will is Ready"}
+        </h2>
+        <p style={{color:"rgba(255,255,255,0.8)",fontSize:14,margin:0}}>
+          {isMs?"Download your Wasiat below. Sign in the presence of witnesses as required by your state."
+               :"Download your Will below. Sign in front of two independent witnesses to make it legally valid."}
+        </p>
+      </div>
+
+      <div style={{background:"#fff",borderRadius:12,padding:"24px 28px",marginBottom:22,border:"1px solid #d1d9e6",boxShadow:"0 2px 12px rgba(0,0,0,0.05)"}}>
+        <h3 style={{fontSize:13,fontWeight:700,color:accent,marginBottom:18,textTransform:"uppercase",letterSpacing:"0.07em"}}>Download Your Document</h3>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <button
+            onClick={()=>dlPDF(willHTML,filename)}
+            style={{background:accent,color:"#fff",border:"none",borderRadius:8,padding:"14px 20px",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,boxShadow:"0 3px 12px rgba(0,0,0,0.15)"}}>
+            <span style={{fontSize:24}}>{"📄"}</span>
+            <span>{"Download as PDF"}</span>
+            <span style={{fontSize:11,fontWeight:400,opacity:0.85}}>{"Opens print dialog — save as PDF"}</span>
+          </button>
+          <button
+            onClick={()=>dlDOC(willHTML,filename+".doc")}
+            style={{background:"#1d4ed8",color:"#fff",border:"none",borderRadius:8,padding:"14px 20px",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,boxShadow:"0 3px 12px rgba(0,0,0,0.15)"}}>
+            <span style={{fontSize:24}}>{"📝"}</span>
+            <span>{"Download as Word"}</span>
+            <span style={{fontSize:11,fontWeight:400,opacity:0.85}}>{"Opens in Microsoft Word / Google Docs"}</span>
+          </button>
+        </div>
+        <div style={{marginTop:14,fontSize:12,color:"#6b7280",background:"#f8fafc",borderRadius:7,padding:"10px 14px",border:"1px solid #e5eaf2"}}>
+          <strong>{"PDF tip:"}</strong>{" When the print dialog opens, select "}<em>{"Save as PDF"}</em>{" as your printer destination."}
+        </div>
+      </div>
+
+      <div style={{background:"#fff",borderRadius:12,padding:"22px 28px",marginBottom:22,border:"1px solid #d1d9e6",boxShadow:"0 2px 12px rgba(0,0,0,0.05)"}}>
+        <h3 style={{fontSize:13,fontWeight:700,color:accent,marginBottom:16,textTransform:"uppercase",letterSpacing:"0.07em"}}>{"What to Do Next"}</h3>
+        {[
+          {n:1,done:true,t:"Document generated successfully"},
+          {n:2,done:false,t:"Download and print your document"},
+          {n:3,done:false,t:"Sign in front of 2 witnesses at the same time"},
+          {n:4,done:false,t:isMs?"Register with your state religious authority (recommended)":"Store the signed original in a safe place"}
+        ].map(st=>(
+          <div key={st.n} style={{display:"flex",alignItems:"flex-start",gap:14,marginBottom:12}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:st.done?accent:"#e5e7eb",color:st.done?"#fff":"#6b7280",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,flexShrink:0,marginTop:1}}>{st.done?"✔":st.n}</div>
+            <div style={{fontSize:13.5,color:st.done?"#9ca3af":"#111827",textDecoration:st.done?"line-through":"none",paddingTop:4}}>{st.t}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{background:"#fff",borderRadius:12,padding:"20px 28px",marginBottom:24,border:"1px solid #d1d9e6",boxShadow:"0 2px 12px rgba(0,0,0,0.05)"}}>
+        <h3 style={{fontSize:13,fontWeight:700,color:accent,marginBottom:12,textTransform:"uppercase",letterSpacing:"0.07em"}}>{"Need Help? Contact Us"}</h3>
+        <div style={{fontSize:13.5,color:"#374151",lineHeight:1.9}}>
+          <div><strong>{cfg.firmName}</strong></div>
+          <div>{"D-25-03 Menara Suezcap 1, KL Gateway, 59200 Kuala Lumpur"}</div>
+          <div>{"Tel: "}<a href="tel:+60134133139" style={{color:accent,textDecoration:"none"}}>{"013-4133 139"}</a></div>
+          <div>{"Email: "}<a href="mailto:andrew@atpartner.co" style={{color:accent,textDecoration:"none"}}>{"andrew@atpartner.co"}</a></div>
+        </div>
+      </div>
+
+      <div style={{display:"flex",justifyContent:"center"}}>
+        <button onClick={onBack} style={{background:"none",border:"1.5px solid #d1d9e6",color:"#374151",padding:"10px 28px",borderRadius:7,fontSize:13.5,cursor:"pointer"}}>
+          {"Back to Home"}
+        </button>
+      </div>
+    </div>
+  </div>);
+}
+
+
+// ── WILL GENERATION UTILITIES ─────────────────────────────
+
+function gv(id){const el=document.getElementById(id);return(el?el.value:'').trim();}
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+function buildNMWillHTML(firmName){
+  const d={
+    name:gv('nm_name'),nric:gv('nm_nric'),dob:gv('nm_dob'),
+    nationality:gv('nm_nationality'),address:gv('nm_address'),marital:gv('nm_marital'),
+    guardName:gv('nm_guard_name'),guardNric:gv('nm_guard_nric'),guardRel:gv('nm_guard_rel'),
+    guardAddr:gv('nm_guard_addr'),guardSub:gv('nm_guard_sub'),
+    property:gv('nm_property'),bank:gv('nm_bank'),investments:gv('nm_investments'),
+    vehicles:gv('nm_vehicles'),business:gv('nm_business'),valuables:gv('nm_valuables'),
+    beneName:gv('nm_bene_name'),beneRel:gv('nm_bene_rel'),beneShare:gv('nm_bene_share'),
+    bene2:gv('nm_bene_2'),trustAge:gv('nm_trust_age'),beneNotes:gv('nm_bene_notes'),
+    execName:gv('nm_exec_name'),execNric:gv('nm_exec_nric'),execRel:gv('nm_exec_rel'),
+    execSub:gv('nm_exec_sub'),storage:gv('nm_storage'),execNotes:gv('nm_exec_notes')
+  };
+  const firm=firmName||'Andrew Toh & Partners';
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const hasAssets=d.property||d.bank||d.investments||d.vehicles||d.business||d.valuables;
+  const hasGuardian=d.guardName||d.guardSub;
+  const secNum=n=>n;let sn=0;
+  const s=t=>`${++sn}. ${t}`;
+
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Last Will and Testament — ${esc(d.name||'[Name]')}</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.85;color:#000;max-width:720px;margin:30px auto;padding:0 50px;}
+  h1{text-align:center;font-size:15pt;text-transform:uppercase;letter-spacing:2px;margin:0 0 2px;}
+  h2{font-size:11pt;text-transform:uppercase;letter-spacing:0.5px;margin:24px 0 8px;border-bottom:1px solid #888;padding-bottom:3px;}
+  .ctr{text-align:center;}
+  .badge{text-align:center;border:1px solid #ccc;padding:7px 20px;margin-bottom:18px;font-size:9.5pt;color:#555;background:#fafafa;}
+  .intro{margin:14px 0;text-align:justify;}
+  .cl{margin:7px 0 7px 22px;text-align:justify;}
+  .sub-cl{margin:5px 0 5px 44px;text-align:justify;}
+  .sig-area{margin-top:50px;}
+  .sig-line{display:inline-block;width:260px;border-bottom:1px solid #000;margin-bottom:3px;}
+  .wit-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:36px;}
+  .wf-label{font-size:9pt;color:#555;margin-top:6px;}
+  .wf-line{border-bottom:1px solid #000;height:20px;margin-bottom:1px;}
+  .warn-box{margin-top:18px;background:#fffbeb;border:1px solid #f59e0b;padding:11px 15px;font-size:9.5pt;color:#78350f;}
+  .firm-ftr{margin-top:48px;border-top:2px solid #0e2240;padding-top:11px;font-size:8.5pt;color:#555;text-align:center;}
+  @media print{.no-print{display:none;}}
+</style></head><body>
+<div class="badge">${esc(firm)} · Bar Council Registered · Wills Act 1959 (Act 346) Compliant</div>
+<div class="ctr"><h1>Last Will and Testament</h1>
+<p style="font-size:9.5pt;color:#666;margin:2px 0 16px;">Generated by ${esc(firm)}</p></div>
+
+<div class="intro">
+I, <strong>${esc(d.name)||'___________________________'}</strong>,
+NRIC No. <strong>${esc(d.nric)||'___________________________'}</strong>,
+${d.dob?`date of birth <strong>${esc(d.dob)}</strong>, `:''}of <strong>${esc(d.address)||'___________________________'}</strong>,
+${d.nationality?`a citizen of <strong>${esc(d.nationality)}</strong>, `:''}${d.marital?`<strong>${esc(d.marital)}</strong>, `:''}
+being of sound mind and memory and not acting under any duress or undue influence, hereby
+<strong>REVOKE</strong> all former Wills and Codicils previously made by me and declare this to be my
+<strong>LAST WILL AND TESTAMENT</strong>, executed on the _____ day of _____________, _________.
+</div>
+
+<h2>${s('APPOINTMENT OF EXECUTOR AND TRUSTEE')}</h2>
+<div class="cl">1.1 I APPOINT <strong>${esc(d.execName)||'[Executor Full Name]'}</strong>${d.execNric?`, NRIC No. <strong>${esc(d.execNric)}</strong>`:''} ${d.execRel?`(my <strong>${esc(d.execRel)}</strong>) `:''} as the Executor and Trustee of this my Will (herein referred to as "my Executor").</div>
+${d.execSub?`<div class="cl">1.2 In the event that the above-named Executor is unable or unwilling to act, I appoint <strong>${esc(d.execSub)}</strong> as substitute Executor with the same powers and duties.</div>`:''}
+
+${hasGuardian?`<h2>${s('GUARDIANSHIP OF MINOR CHILDREN')}</h2>
+<div class="cl">2.1 I APPOINT <strong>${esc(d.guardName)||'[Guardian Full Name]'}</strong>${d.guardNric?`, NRIC No. <strong>${esc(d.guardNric)}</strong>`:''} ${d.guardRel?`(my <strong>${esc(d.guardRel)}</strong>) `:''}as the Guardian of my minor children during their respective minorities.</div>
+${d.guardAddr?`<div class="cl">2.2 Guardian's address: ${esc(d.guardAddr)}</div>`:''}
+${d.guardSub?`<div class="cl">${d.guardName?'2.3':'2.2'} In the event that the above-named Guardian is unable or unwilling to act, I appoint <strong>${esc(d.guardSub)}</strong> as substitute Guardian.</div>`:''}
+`:''}
+
+<h2>${s('MY ESTATE')}</h2>
+<div class="cl">${sn}.1 Subject to the payment of my just debts, funeral and testamentary expenses, I give, bequeath and devise the following assets that form part of my estate:</div>
+${d.property?`<div class="cl"><strong>(a) Real Property (Solely-Owned):</strong><br>${esc(d.property)}</div>`:''}
+${d.bank?`<div class="cl"><strong>(b) Bank Accounts:</strong><br>${esc(d.bank)}</div>`:''}
+${d.investments?`<div class="cl"><strong>(c) Investments / Shares / Unit Trusts:</strong><br>${esc(d.investments)}</div>`:''}
+${d.vehicles?`<div class="cl"><strong>(d) Vehicles:</strong><br>${esc(d.vehicles)}</div>`:''}
+${d.business?`<div class="cl"><strong>(e) Business Interests:</strong><br>${esc(d.business)}</div>`:''}
+${d.valuables?`<div class="cl"><strong>(f) Valuables and Other Assets:</strong><br>${esc(d.valuables)}</div>`:''}
+${!hasAssets?`<div class="cl"><em>All real and personal property of which I shall be possessed at the time of my death.</em></div>`:''}
+<div class="cl">${sn}.2 <strong>NOTE:</strong> Assets held as joint tenants, EPF proceeds (paid to nominee as trustee), and assets with named insurance or Takaful beneficiaries do NOT form part of this estate and are NOT governed by this Will.</div>
+
+<h2>${s('DISTRIBUTION OF MY ESTATE')}</h2>
+<div class="cl">${sn}.1 I GIVE, BEQUEATH and DEVISE all the rest and residue of my estate (both real and personal, wherever situate) to <strong>${esc(d.beneName)||'[Beneficiary Full Name]'}</strong>${d.beneRel?`, my <strong>${esc(d.beneRel)}</strong>`:''}${d.beneShare?`, in the proportion of <strong>${esc(d.beneShare)}</strong>`:''}, absolutely.</div>
+${d.bene2?`<div class="cl">${sn}.2 Should <strong>${esc(d.beneName||'the above beneficiary')}</strong> predecease me or fail to survive me by thirty (30) days, I give, bequeath and devise my estate to <strong>${esc(d.bene2)}</strong>, absolutely.</div>`:''}
+${d.beneNotes?`<div class="cl">${sn}.3 <strong>Specific Bequests and Additional Directions:</strong><br>${esc(d.beneNotes)}</div>`:''}
+
+${d.trustAge&&d.trustAge!=='Other (specify in notes)'?`<h2>${s('TRUST FOR MINOR BENEFICIARIES')}</h2>
+<div class="cl">${sn}.1 If any beneficiary under this Will is under the age of <strong>${esc(d.trustAge)}</strong> years at the date of my death, my Executor shall hold that beneficiary's share upon trust and invest the same. My Executor shall apply the income and capital for the maintenance, education, advancement and benefit of such beneficiary until he or she attains the age of <strong>${esc(d.trustAge)}</strong> years, whereupon my Executor shall pay and transfer the capital and any accumulated income to such beneficiary absolutely.</div>
+`:''}
+
+<h2>${s('STORAGE OF THIS WILL')}</h2>
+<div class="cl">${sn}.1 The original of this Will shall be kept with <strong>${esc(d.storage||'Andrew Toh &amp; Partners')}</strong>.</div>
+
+${d.execNotes?`<h2>${s('ADDITIONAL INSTRUCTIONS')}</h2>
+<div class="cl">${esc(d.execNotes)}</div>
+`:''}
+
+<div class="sig-area">
+<h2>EXECUTION</h2>
+<div class="cl">IN WITNESS WHEREOF I have hereunto set my hand to this my Will on the date first written above.</div>
+<br>
+<p><strong>SIGNED</strong> by the above-named Testator <strong>${esc(d.name||'[Full Name]')}</strong>:</p>
+<br><br>
+<div class="sig-line">&nbsp;</div><br>
+<strong>${esc(d.name||'[Full Name]')}</strong><br>
+NRIC No.: ${esc(d.nric||'___________________________')}<br>
+Date: ________________________________
+
+<div class="wit-grid">
+  <div>
+    <p><strong>WITNESS 1</strong></p>
+    <div class="wf-label">Full Name:</div><div class="wf-line"></div>
+    <div class="wf-label">NRIC No.:</div><div class="wf-line"></div>
+    <div class="wf-label">Address:</div><div class="wf-line"></div><div class="wf-line"></div>
+    <div class="wf-label">Date:</div><div class="wf-line"></div>
+    <div class="wf-label">Signature (sign here):</div><div class="wf-line" style="margin-top:22px;"></div>
+  </div>
+  <div>
+    <p><strong>WITNESS 2</strong></p>
+    <div class="wf-label">Full Name:</div><div class="wf-line"></div>
+    <div class="wf-label">NRIC No.:</div><div class="wf-line"></div>
+    <div class="wf-label">Address:</div><div class="wf-line"></div><div class="wf-line"></div>
+    <div class="wf-label">Date:</div><div class="wf-line"></div>
+    <div class="wf-label">Signature (sign here):</div><div class="wf-line" style="margin-top:22px;"></div>
+  </div>
+</div>
+
+<div class="warn-box">
+  <strong>⚠️ IMPORTANT — WITNESSING REQUIREMENTS (Wills Act 1959, Section 5):</strong>
+  <ul style="margin:5px 0 0;padding-left:18px;">
+    <li>Both witnesses must be physically present at the <strong>same time</strong> when you sign.</li>
+    <li>Witnesses must <strong>NOT</strong> be beneficiaries under this Will — or the gift to that witness is void.</li>
+    <li>The <strong>spouse</strong> of a witness must also <strong>NOT</strong> be a beneficiary.</li>
+    <li>Witnesses must be 18 years of age or older and of sound mind.</li>
+    <li>Do not date this Will in advance — fill in the date on the day you sign.</li>
+  </ul>
+</div>
+</div>
+
+<div class="firm-ftr">
+  ${esc(firm)} · D-25-03 Menara Suezcap 1, KL Gateway, 59200 Kuala Lumpur · Tel: 013-4133 139 · andrew@atpartner.co<br>
+  Generated on ${today} · This document is prepared pursuant to the Wills Act 1959 (Act 346) of Malaysia
+</div>
+</body></html>`;
+}
+
+function buildMWillHTML(ss,firmName){
+  const d={
+    name:gv('ms_name'),nric:gv('ms_nric'),dob:gv('ms_dob'),
+    gender:gv('ms_gender'),address:gv('ms_address'),
+    cash:gv('ms_cash'),property:gv('ms_property'),
+    business:gv('ms_business'),valuables:gv('ms_valuables'),
+    beneName:gv('ms_bene_name'),beneNric:gv('ms_bene_nric'),
+    beneRel:gv('ms_bene_rel'),beneAssets:gv('ms_bene_assets'),bene2:gv('ms_bene_2'),
+    wasiName:gv('ms_wasi_name'),wasiNric:gv('ms_wasi_nric'),
+    wasiRel:gv('ms_wasi_rel'),wasiAddr:gv('ms_wasi_addr'),wasiSub:gv('ms_wasi_sub'),
+    notes:gv('ms_notes')
+  };
+  const firm=firmName||'Andrew Toh & Partners';
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const stateName=ss?ss.name:'[State]';
+  const stateLaw=ss?ss.law:'[State Islamic Family Law Enactment]';
+  const stateWit=ss?ss.wit:'2 adult Muslim witnesses';
+  const stateAuth=ss?ss.auth:'[State Religious Authority]';
+  const hasAssets=d.cash||d.property||d.business||d.valuables;
+  let sn=0;
+
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Wasiat (Islamic Will) — ${esc(d.name||'[Name]')}</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.85;color:#000;max-width:720px;margin:30px auto;padding:0 50px;}
+  h1{text-align:center;font-size:15pt;text-transform:uppercase;letter-spacing:2px;margin:0 0 2px;}
+  h2{font-size:11pt;text-transform:uppercase;letter-spacing:0.5px;margin:24px 0 8px;border-bottom:1px solid #1B5C38;padding-bottom:3px;color:#1B5C38;}
+  .ctr{text-align:center;}
+  .badge{text-align:center;border:1px solid #86efac;padding:7px 20px;margin-bottom:18px;font-size:9.5pt;color:#166534;background:#f0fdf4;}
+  .intro{margin:14px 0;text-align:justify;}
+  .cl{margin:7px 0 7px 22px;text-align:justify;}
+  .decl{background:#f0fdf4;border:1px solid #86efac;padding:12px 16px;margin:14px 0;font-size:10.5pt;color:#14532d;}
+  .sig-area{margin-top:50px;}
+  .sig-line{display:inline-block;width:260px;border-bottom:1px solid #000;margin-bottom:3px;}
+  .wit-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:36px;}
+  .wf-label{font-size:9pt;color:#555;margin-top:6px;}
+  .wf-line{border-bottom:1px solid #000;height:20px;margin-bottom:1px;}
+  .warn-box{margin-top:18px;background:#fffbeb;border:1px solid #f59e0b;padding:11px 15px;font-size:9.5pt;color:#78350f;}
+  .firm-ftr{margin-top:48px;border-top:2px solid #1B5C38;padding-top:11px;font-size:8.5pt;color:#555;text-align:center;}
+  @media print{.no-print{display:none;}}
+</style></head><body>
+<div class="badge">${esc(firm)} · ${esc(stateLaw)}</div>
+<div class="ctr"><h1>Wasiat (Islamic Will)</h1>
+<p style="font-size:9.5pt;color:#666;margin:2px 0 4px;">${esc(stateName)} · Generated by ${esc(firm)}</p></div>
+
+<div class="decl">
+بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ<br>
+<em>In the name of Allah, the Most Gracious, the Most Merciful</em>
+</div>
+
+<div class="intro">
+I, <strong>${esc(d.name)||'___________________________'}</strong>,
+NRIC No. <strong>${esc(d.nric)||'___________________________'}</strong>,
+${d.dob?`date of birth <strong>${esc(d.dob)}</strong>, `:''}${d.gender?`<strong>${esc(d.gender)}</strong>, `:''}
+of <strong>${esc(d.address)||'___________________________'}</strong>,
+being a Muslim of sound mind and memory and acting of my own free will, hereby make this
+<strong>WASIAT</strong> in accordance with the ${esc(stateLaw)} and Islamic law.
+</div>
+
+<h2>${++sn}. DECLARATION OF FAITH</h2>
+<div class="cl">${sn}.1 I declare that I am a Muslim professing the Islamic faith. I declare the Shahadah: <em>La ilaha illallah, Muhammadur Rasulullah</em>. This Wasiat is made in accordance with Islamic law applicable in <strong>${esc(stateName)}</strong>.</div>
+<div class="cl">${sn}.2 I understand and acknowledge that this Wasiat governs only my discretionary one-third (1/3) share of my estate. The remaining two-thirds (2/3) shall be distributed by Faraid (Islamic inheritance law) to my entitled heirs.</div>
+<div class="cl">${sn}.3 I declare that this Wasiat does not purport to give any benefit to any heir who is already entitled to inherit under Faraid, unless all other Faraid heirs give their written consent after my death.</div>
+
+<h2>${++sn}. WASIAT-ELIGIBLE ASSETS (Discretionary 1/3 Share)</h2>
+<div class="cl">${sn}.1 The following assets form or represent my discretionary one-third (1/3) share that is subject to this Wasiat:</div>
+${d.cash?`<div class="cl"><strong>(a) Cash / Savings (Wasiat Portion):</strong><br>${esc(d.cash)}</div>`:''}
+${d.property?`<div class="cl"><strong>(b) Real Property (Freehold/Leasehold, Solely-Owned):</strong><br>${esc(d.property)}</div>`:''}
+${d.business?`<div class="cl"><strong>(c) Business Interests / Shares:</strong><br>${esc(d.business)}</div>`:''}
+${d.valuables?`<div class="cl"><strong>(d) Other Eligible Assets:</strong><br>${esc(d.valuables)}</div>`:''}
+${!hasAssets?`<div class="cl"><em>Assets to be determined and confirmed by my Wasi at the time of my death, limited to the discretionary one-third (1/3) share.</em></div>`:''}
+<div class="cl">${sn}.2 <strong>EXCLUDED from this Wasiat:</strong> EPF, Takaful, Tabung Haji, and ASB nominations (these are distributed as Hibah directly to named nominees and are outside the Wasiat entirely). Ancestral Pusaka land (where applicable) is also excluded.</div>
+
+<h2>${++sn}. WASIAT BENEFICIARIES</h2>
+<div class="cl">${sn}.1 I hereby bequeath my discretionary one-third (1/3) share to:</div>
+<div class="cl"><strong>Beneficiary:</strong> <strong>${esc(d.beneName)||'[Beneficiary Full Name]'}</strong>${d.beneNric?`, NRIC No. <strong>${esc(d.beneNric)}</strong>`:''} ${d.beneRel?`(my <strong>${esc(d.beneRel)}</strong>) `:''}</div>
+${d.beneAssets?`<div class="cl"><strong>Assets / Portion:</strong> ${esc(d.beneAssets)}</div>`:''}
+${d.bene2?`<div class="cl">${sn}.2 Should the above-named beneficiary predecease me, I bequeath the said share to <strong>${esc(d.bene2)}</strong>.</div>`:''}
+
+<h2>${++sn}. WASI (EXECUTOR)</h2>
+<div class="cl">${sn}.1 I hereby appoint <strong>${esc(d.wasiName)||'[Wasi Full Name]'}</strong>${d.wasiNric?`, NRIC No. <strong>${esc(d.wasiNric)}</strong>`:''} ${d.wasiRel?`(my <strong>${esc(d.wasiRel)}</strong>) `:''}as my Wasi (Executor) to carry out the provisions of this Wasiat.</div>
+${d.wasiAddr?`<div class="cl">${sn}.2 Wasi's address: ${esc(d.wasiAddr)}</div>`:''}
+${d.wasiSub?`<div class="cl">${d.wasiAddr?sn+'.3':sn+'.2'} Should the above-named Wasi be unable or unwilling to act, I appoint <strong>${esc(d.wasiSub)}</strong> as substitute Wasi.</div>`:''}
+
+${d.notes?`<h2>${++sn}. ADDITIONAL DECLARATIONS</h2>
+<div class="cl">${esc(d.notes)}</div>
+`:''}
+
+<div class="sig-area">
+<h2>EXECUTION AND WITNESSING</h2>
+<div class="cl">IN WITNESS WHEREOF I have hereunto set my hand to this my Wasiat on the _____ day of _____________, _________.</div>
+<br>
+<p><strong>SIGNED</strong> as my Wasiat by <strong>${esc(d.name||'[Full Name]')}</strong>:</p>
+<br><br>
+<div class="sig-line">&nbsp;</div><br>
+<strong>${esc(d.name||'[Full Name]')}</strong><br>
+NRIC No.: ${esc(d.nric||'___________________________')}<br>
+Date: ________________________________
+
+<div class="wit-grid">
+  <div>
+    <p><strong>WITNESS 1</strong></p>
+    <div class="wf-label">Full Name:</div><div class="wf-line"></div>
+    <div class="wf-label">NRIC No.:</div><div class="wf-line"></div>
+    <div class="wf-label">Address:</div><div class="wf-line"></div><div class="wf-line"></div>
+    <div class="wf-label">Date:</div><div class="wf-line"></div>
+    <div class="wf-label">Signature (sign here):</div><div class="wf-line" style="margin-top:22px;"></div>
+  </div>
+  <div>
+    <p><strong>WITNESS 2</strong></p>
+    <div class="wf-label">Full Name:</div><div class="wf-line"></div>
+    <div class="wf-label">NRIC No.:</div><div class="wf-line"></div>
+    <div class="wf-label">Address:</div><div class="wf-line"></div><div class="wf-line"></div>
+    <div class="wf-label">Date:</div><div class="wf-line"></div>
+    <div class="wf-label">Signature (sign here):</div><div class="wf-line" style="margin-top:22px;"></div>
+  </div>
+</div>
+
+<div class="warn-box">
+  <strong>⚠️ WITNESSING REQUIREMENTS FOR ${stateName.toUpperCase()}:</strong>
+  ${esc(stateWit)}
+  <ul style="margin:6px 0 0;padding-left:18px;">
+    <li>Witnesses must be present at the <strong>same time</strong> when you sign.</li>
+    <li>Witnesses must be adult Muslims of sound mind.</li>
+    <li>Witnesses must <strong>NOT</strong> be named beneficiaries in this Wasiat.</li>
+    <li>Registration with <strong>${esc(stateAuth)}</strong> is strongly recommended for safekeeping.</li>
+  </ul>
+</div>
+</div>
+
+<div class="firm-ftr">
+  ${esc(firm)} · D-25-03 Menara Suezcap 1, KL Gateway, 59200 Kuala Lumpur · Tel: 013-4133 139 · andrew@atpartner.co<br>
+  Generated on ${today} · Prepared in accordance with ${esc(stateLaw)}
+</div>
+</body></html>`;
+}
+
+function dlPDF(html,name){
+  const w=window.open('','_blank','width=960,height=720');
+  if(!w){alert('Please allow popups to download your document as PDF.');return;}
+  w.document.write(html+`<script>setTimeout(function(){window.print();},600);<\/script>`);
+  w.document.close();w.focus();
+}
+
+function dlDOC(html,filename){
+  const src=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>`+html.replace(/^<!DOCTYPE[^>]*>/i,'').replace(/<html[^>]*>/i,'');;
+  const blob=new Blob(['﻿',src],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+
+// ── NM FORM ──────────────────────────────────────────
+function NMForm({setPage,step,setStep}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  const steps=tA("nmSteps",lang);
+  const titles=tA("nmTitles",lang);
+  const descs=tA("nmDescs",lang);
+  const navy=cfg.navy,gold=cfg.gold;
+  const[done,setDone]=useState(false);
+  const[willHTML,setWillHTML]=useState('');
+  const gp0=[
+    {q:"What name goes on the will?",a:"Your full legal name exactly as per your NRIC. Middle names, if any, should be included."},
+    {q:"What if I was born overseas?",a:"Use your MyPR or citizenship document name. Note your country of birth in the additional information field."},
+    {q:"Do I need a lawyer present?",a:"No — you complete the form yourself. Signing must happen in front of 2 witnesses, but that is done after you receive your document."}
+  ];
+  const gpDefault=[
+    {q:"What assets pass through this will?",a:"Only solely-owned assets in your name. Joint tenancy property, EPF, and named insurance beneficiary assets do NOT pass through your will."},
+    {q:"Can I leave everything to one person?",a:"Yes. You may leave 100% to one beneficiary. Name a secondary in case they predecease you."}
+  ];
+  function handleGenerate(){
+    const html=buildNMWillHTML(cfg.firmName);
+    setWillHTML(html);
+    setDone(true);
+    window.scrollTo(0,0);
+  }
+  const cards=[
+    <FCard key={0} title={titles[0]} desc={descs[0]} onNext={()=>setStep(1)} navy={navy} gold={gold} lang={lang}>
+      <R2 c={[<Field fid="nm_name" label="Full Legal Name" req hint="As per NRIC"/>,<Field fid="nm_nric" label="NRIC Number" req/>]}/>
+      <R2 c={[<Field fid="nm_dob" label="Date of Birth" type="date" req/>,<Field fid="nm_nationality" label="Nationality" dflt="Malaysian"/>]}/>
+      <R2 c={[<Field fid="nm_marital" label="Marital Status" type="select" opts={["Single","Married","Divorced","Widowed"]}/>,<Field fid="nm_address" label="Address" type="textarea"/>]}/>
+    </FCard>,
+    <FCard key={1} title={titles[1]} desc={descs[1]} onBack={()=>setStep(0)} onNext={()=>setStep(2)} navy={navy} gold={gold} lang={lang}>
+      <Alrt type="info">If you have no minor children, you may skip this section.</Alrt>
+      <Field fid="nm_guard_name" label="Guardian Full Name" hint="Full name as per NRIC"/>
+      <R2 c={[<Field fid="nm_guard_nric" label="Guardian NRIC"/>,<Field fid="nm_guard_rel" label="Guardian Relationship" type="select" opts={["Sibling","Uncle/Aunt","Close Friend","Grandparent","Other"]}/>]}/>
+      <Field fid="nm_guard_addr" label="Guardian Address" type="textarea"/>
+      <Dv/>
+      <Field fid="nm_guard_sub" label="Substitute Guardian (Recommended)" hint="If primary guardian is unable to act"/>
+    </FCard>,
+    <FCard key={2} title={titles[2]} desc={descs[2]} onBack={()=>setStep(1)} onNext={()=>setStep(3)} navy={navy} gold={gold} lang={lang}>
+      <Alrt type="warn">Assets held as joint tenant, EPF, and named insurance/Takaful beneficiary assets do NOT pass through this will.</Alrt>
+      <Field fid="nm_property" label="Real Property (Solely-owned)" type="textarea" hint="Address, title number, estimated value"/>
+      <Field fid="nm_bank" label="Bank Accounts" type="textarea" hint="Bank name and account number(s). Joint accounts with right of survivorship are excluded."/>
+      <Field fid="nm_investments" label="Investments / Shares / Unit Trusts" type="textarea"/>
+      <Field fid="nm_vehicles" label="Vehicles" type="textarea" hint="Registration number(s)"/>
+      <Field fid="nm_business" label="Business Interests" type="textarea"/>
+      <Field fid="nm_valuables" label="Valuables / Others" type="textarea" hint="Jewellery, art, collectibles, digital assets, etc."/>
+    </FCard>,
+    <FCard key={3} title={titles[3]} desc={descs[3]} onBack={()=>setStep(2)} onNext={()=>setStep(4)} navy={navy} gold={gold} lang={lang}>
+      <Alrt type="critical">Witnesses cannot be beneficiaries. Their spouses also cannot be beneficiaries.</Alrt>
+      <Field fid="nm_bene_name" label="Primary Beneficiary" req hint="Full name as per NRIC"/>
+      <R2 c={[<Field fid="nm_bene_rel" label="Relationship"/>,<Field fid="nm_bene_share" label="Share / Portion" dflt="100%"/>]}/>
+      <Dv/>
+      <Field fid="nm_bene_2" label="Secondary Beneficiary (if primary predeceases you)" hint="Optional but strongly recommended"/>
+      <Dv/>
+      <Alrt type="info">If any beneficiary is under 18, the executor holds assets in trust until the age you specify below.</Alrt>
+      <Field fid="nm_trust_age" label="Trust Age for Minor Beneficiaries" type="select" opts={["18","21","25","Other (specify in notes)"]}/>
+      <Field fid="nm_bene_notes" label="Additional Notes / Specific Bequests" type="textarea"/>
+    </FCard>,
+    <FCard key={4} title={titles[4]} desc={descs[4]} onBack={()=>setStep(3)} onNext={handleGenerate} nxtLbl={t("nmSubmit",lang)} navy={navy} gold={gold} isLast lang={lang}>
+      <Alrt type="green">Your will document is generated instantly on completion. Download, print, and sign in the presence of two independent witnesses — full witnessing instructions are included.</Alrt>
+      <Field fid="nm_exec_name" label="Executor Full Name" req hint="The person who carries out your will"/>
+      <R2 c={[<Field fid="nm_exec_nric" label="Executor NRIC"/>,<Field fid="nm_exec_rel" label="Executor Relationship"/>]}/>
+      <Field fid="nm_exec_sub" label="Substitute Executor" hint="If primary executor is unable or unwilling to act"/>
+      <Dv/>
+      <Field fid="nm_storage" label="Will Storage Location" type="select" opts={["Andrew Toh & Partners (recommended)","Personal safe","Bank safe deposit box","Other"]}/>
+      <Field fid="nm_exec_notes" label="Additional Instructions" type="textarea" hint="Funeral wishes, specific instructions for executor"/>
+    </FCard>
+  ];
+  if(done)return(<WillDone willHTML={willHTML} filename="My_Will_ATP" onBack={()=>{setDone(false);setPage("landing");}} navy={navy} gold={gold} type="nm"/>);
+  return(<div style={{padding:"36px 36px",background:"#f0f4fa"}}>
+    <div style={{maxWidth:1080,margin:"0 auto"}}>
+      <EditBanner/>
+      <div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr 280px",gap:24}}>
+        <div>
+          <StepBar steps={steps} cur={step} navy={navy} gold={gold}/>
+          {cards.map((card,i)=><div key={i} style={{display:i===step?"block":"none"}}>{card}</div>)}
+        </div>
+        <Guide lang={lang} navy={navy} gold={gold} prompts={step===0?gp0:gpDefault}/>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── MUSLIM FORM ── green theme ───────────────────────
+function MForm({setPage,step,setStep,ss}){
+  const{cfg}=useEdit();const{lang}=useLang();
+  const state=STATES.find(s=>s.id===ss);
+  const steps=tA("mSteps",lang);
+  const titles=tA("mTitles",lang);
+  const descs=tA("mDescs",lang);
+  // Wasiat uses green as primary, gold as accent
+  const navy=WGREEN,gold=cfg.gold;
+  const gp=[
+    {q:"What can go in the Wasiat?",a:"Only assets forming your discretionary 1/3. EPF, Takaful, Tabung Haji nominations are outside the Wasiat entirely."},
+    {q:"Who qualifies as Wasi?",a:"A sane adult Muslim. They need not be a relative. Choose someone accessible and organised."},
+    {q:"Is registration mandatory?",a:"Not mandatory but strongly recommended. State religious authorities often offer free or low-cost registration with secure safekeeping."}
+  ];
+  const[done,setDone]=useState(false);
+  const[willHTML,setWillHTML]=useState('');
+  function handleGenerate(){
+    const html=buildMWillHTML(state,cfg.firmName);
+    setWillHTML(html);
+    setDone(true);
+    window.scrollTo(0,0);
+  }
+  const cards=[
+    <FCard key={0} title={titles[0]} desc={descs[0]} onNext={()=>setStep(1)} navy={navy} gold={gold} lang={lang}>
+      {state&&<Alrt type="info">State: <strong>{state.name}</strong> · {state.law}</Alrt>}
+      <R2 c={[<Field fid="ms_name" label="Full Legal Name" req/>,<Field fid="ms_nric" label="NRIC Number" req/>]}/>
+      <R2 c={[<Field fid="ms_dob" label="Date of Birth" type="date" req/>,<Field fid="ms_gender" label="Gender" type="select" opts={["Male","Female"]}/>]}/>
+      <Field fid="ms_address" label="Address (Domicile)" type="textarea"/>
+      <Dv/>
+      <Alrt type="green">I declare that I am a Muslim and this Wasiat is made in accordance with Islamic law applicable in {state?.name||"my state"}.</Alrt>
+    </FCard>,
+    <FCard key={1} title={titles[1]} desc={descs[1]} onBack={()=>setStep(0)} onNext={()=>setStep(2)} navy={navy} gold={gold} lang={lang}>
+      <Alrt type="critical">Only assets forming your discretionary 1/3 share. EPF, Takaful, Tabung Haji nominations are EXCLUDED — those are governed by hibah.</Alrt>
+      <Field fid="ms_cash" label="Cash / Savings (Wasiat portion only)" hint="Specify amount or percentage of 1/3 share"/>
+      <Field fid="ms_property" label="Real Property (freehold/leasehold, solely-owned)" type="textarea" hint="State title number. Pusaka land (NS) is excluded."/>
+      <Field fid="ms_business" label="Business Interests / Shares" type="textarea"/>
+      <Field fid="ms_valuables" label="Valuables / Other Eligible Assets" type="textarea"/>
+    </FCard>,
+    <FCard key={2} title={titles[2]} desc={descs[2]} onBack={()=>setStep(1)} onNext={()=>setStep(3)} navy={navy} gold={gold} lang={lang}>
+      <Alrt type="warn">Cannot gift to Faraid heirs (spouse, child, parent) without written consent of ALL other Faraid heirs post-death.</Alrt>
+      <Field fid="ms_bene_name" label="Beneficiary Full Name" req/>
+      <R2 c={[<Field fid="ms_bene_nric" label="NRIC"/>,<Field fid="ms_bene_rel" label="Relationship to Testator"/>]}/>
+      <Field fid="ms_bene_assets" label="Assets / Portion to Receive" type="textarea"/>
+      <Dv/>
+      <Field fid="ms_bene_2" label="Second Beneficiary (optional)" hint="If primary beneficiary predeceases you"/>
+    </FCard>,
+    <FCard key={3} title={titles[3]} desc={descs[3]} onBack={()=>setStep(2)} onNext={()=>setStep(4)} navy={navy} gold={gold} lang={lang}>
+      {state&&<Alrt type="info">Witness requirements for {state.name}: {state.wit}</Alrt>}
+      <Field fid="ms_wasi_name" label="Wasi (Executor) Full Name" req/>
+      <R2 c={[<Field fid="ms_wasi_nric" label="Wasi NRIC"/>,<Field fid="ms_wasi_rel" label="Relationship"/>]}/>
+      <Field fid="ms_wasi_addr" label="Wasi Address" type="textarea"/>
+      <Dv/>
+      <Field fid="ms_wasi_sub" label="Substitute Wasi" hint="Strongly recommended — estate administration can be prolonged"/>
+    </FCard>,
+    <FCard key={4} title={titles[4]} desc={descs[4]} onBack={()=>setStep(3)} onNext={handleGenerate} nxtLbl={t("mSubmit",lang)} navy={navy} gold={gold} isLast lang={lang}>
+      <Alrt type="green">Your Wasiat document is generated upon completion. Proceed to witnessing with the included state-specific checklist for {state?.name||"your state"}.</Alrt>
+      <Field fid="ms_notes" label="Additional Declarations / Notes" type="textarea"/>
+      <Alrt type="info">Witness requirements for {state?.name||"your state"}: {state?.wit}. A witnessing guide specific to your state is included with your document.</Alrt>
+      {state?.reg&&<Alrt type="info">Registration: {state.reg}</Alrt>}
+    </FCard>
+  ];
+  if(done)return(<WillDone willHTML={willHTML} filename="My_Wasiat_ATP" onBack={()=>{setDone(false);setPage("landing");}} navy={WGREEN} gold={gold} type="ms"/>);
+  return(<div style={{padding:"36px 36px",background:"#f0f6f3"}}>
+    <div style={{maxWidth:1080,margin:"0 auto"}}>
+      <EditBanner/>
+      <div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr 280px",gap:24}}>
+        <div>
+          <StepBar steps={steps} cur={step} navy={navy} gold={gold}/>
+          {cards.map((card,i)=><div key={i} style={{display:i===step?"block":"none"}}>{card}</div>)}
+        </div>
+        <Guide lang={lang} navy={navy} gold={gold} prompts={gp}/>
+      </div>
+    </div>
+  </div>);
+}
+
+const FONTS=[
+  {label:"Georgia (Classic)",value:"Georgia, serif"},
+  {label:"Playfair Display",value:"'Playfair Display', Georgia, serif"},
+  {label:"Lora",value:"'Lora', Georgia, serif"},
+];
+function Section({title,children,defaultOpen=false}){
+  const[op,sOp]=useState(defaultOpen);
+  return(<div style={{marginBottom:4}}>
+    <div onClick={()=>sOp(!op)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:"rgba(255,255,255,0.07)",borderRadius:6,cursor:"pointer",marginBottom:op?5:0}}>
+      <span style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.7)",textTransform:"uppercase",letterSpacing:"0.07em"}}>{title}</span>
+      <span style={{color:"rgba(255,255,255,0.4)",fontSize:13,transform:op?"rotate(180deg)":"none",transition:"0.2s"}}>{"▾"}</span>
+    </div>
+    {op&&<div style={{paddingLeft:4}}>{children}</div>}
+  </div>);
+}
+function Toggle({lbl,f}){
+  const{cfg,setCfg}=useEdit();
+  const v=cfg.vis[f];
+  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 10px",marginBottom:2}}>
+    <span style={{fontSize:11.5,color:v?"rgba(255,255,255,0.75)":"rgba(255,255,255,0.3)"}}>{lbl}</span>
+    <div onClick={()=>setCfg(c=>({...c,vis:{...c.vis,[f]:!v}}))} style={{width:36,height:19,borderRadius:10,background:v?"#22c55e":"rgba(255,255,255,0.12)",position:"relative",cursor:"pointer",transition:"background 0.2s"}}>
+      <div style={{position:"absolute",top:2,left:v?18:2,width:15,height:15,borderRadius:"50%",background:"#fff",transition:"left 0.2s"}}/>
+    </div>
+  </div>;
+}
+function EditorPanel({em,onSave,onReset,onExport,saved}){
+  const{cfg,setCfg}=useEdit();const{lang}=useLang();
+  if(!em)return null;
+  return(<div style={{position:"fixed",right:0,top:0,height:"100vh",width:264,background:"#0e2240",display:"flex",flexDirection:"column",zIndex:300,boxShadow:"-4px 0 24px rgba(0,0,0,0.35)"}}>
+    <div style={{padding:"14px 14px 10px",borderBottom:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <span style={{fontFamily:"Georgia,serif",fontSize:13,fontWeight:700,color:cfg.gold}}>{t("edTitle",lang)}</span>
+      <span style={{fontSize:10,color:"rgba(255,255,255,0.3)",fontStyle:"italic"}}>v7</span>
+    </div>
+    <div className="eps" style={{flex:1,overflowY:"auto",padding:"10px 10px"}}>
+      {/* Review note */}
+      <div style={{background:"rgba(251,191,36,0.1)",border:"1px solid rgba(251,191,36,0.3)",borderRadius:6,padding:"7px 10px",marginBottom:10,fontSize:10.5,color:"#fde68a",lineHeight:1.5}}>
+        {"⚠️"} BM &amp; Chinese translations require Andrew's review before going live.
+      </div>
+      {/* COLORS */}
+      <Section title={t("edColors",lang)} defaultOpen>
+        {[["navy",t("edNavy",lang)],["gold",t("edGold",lang)]].map(([f,lbl])=>(
+          <div key={f} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",marginBottom:3}}>
+            <span style={{fontSize:11.5,color:"rgba(255,255,255,0.7)"}}>{lbl}</span>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:20,height:20,borderRadius:4,background:cfg[f],border:"1px solid rgba(255,255,255,0.2)"}}/>
+              <input type="color" value={cfg[f]} onChange={e=>setCfg(c=>({...c,[f]:e.target.value}))} style={{width:32,height:20,border:"none",borderRadius:3,cursor:"pointer",background:"transparent",padding:0}}/>
+            </div>
+          </div>
+        ))}
+      </Section>
+      {/* TYPOGRAPHY */}
+      <Section title={t("edFont",lang)} defaultOpen>
+        <div style={{padding:"6px 10px 4px"}}>
+          <div style={{fontSize:10.5,color:"rgba(255,255,255,0.5)",marginBottom:5}}>{t("edFont",lang)}</div>
+          <select value={cfg.fontFamily} onChange={e=>{const v=e.target.value;setCfg(c=>({...c,fontFamily:v}));document.body.style.fontFamily=v;}} style={{width:"100%",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:5,color:"#fff",padding:"6px 8px",fontSize:12}}>
+            {FONTS.map(f=><option key={f.value} value={f.value} style={{background:"#0e2240"}}>{f.label}</option>)}
+          </select>
+        </div>
+        <div style={{padding:"4px 10px 8px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+            <span style={{fontSize:10.5,color:"rgba(255,255,255,0.5)"}}>{t("edSize",lang)}</span>
+            <span style={{fontSize:11,color:cfg.gold,fontWeight:700}}>{cfg.fontSize}px</span>
+          </div>
+          <input type="range" min={12} max={18} step={1} value={cfg.fontSize} onChange={e=>{const v=parseInt(e.target.value);setCfg(c=>({...c,fontSize:v}));document.body.style.fontSize=v+"px";}} style={{width:"100%",accentColor:cfg.gold}}/>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:9.5,color:"rgba(255,255,255,0.3)",marginTop:3}}>
+            <span>12px</span><span>18px</span>
+          </div>
+        </div>
+        {/* preview */}
+        <div style={{margin:"0 10px 8px",background:"rgba(255,255,255,0.06)",borderRadius:6,padding:"9px 11px"}}>
+          <div style={{fontFamily:cfg.fontFamily,color:cfg.gold,fontSize:cfg.fontSize,fontWeight:700,lineHeight:1.3}}>{cfg.firmName}</div>
+          <div style={{fontFamily:cfg.fontFamily,color:"rgba(255,255,255,0.5)",fontSize:Math.max(11,cfg.fontSize-2),marginTop:3,lineHeight:1.5}}>Legal will writing service</div>
+        </div>
+      </Section>
+      {/* FIRM */}
+      <Section title="Firm & Contact">
+        {[["firmName","Firm Name"],["phone","Phone"],["email","Email"]].map(([f,lbl])=>(
+          <div key={f} style={{padding:"4px 10px",marginBottom:4}}>
+            <div style={{fontSize:9.5,color:"rgba(255,255,255,0.4)",marginBottom:2}}>{lbl}</div>
+            <input value={cfg[f]} onChange={e=>setCfg(c=>({...c,[f]:e.target.value}))} style={{width:"100%",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:4,color:"#fff",padding:"5px 7px",fontSize:11.5,fontFamily:"inherit"}}/>
+          </div>
+        ))}
+      </Section>
+      {/* VISIBILITY */}
+      <Section title={t("edVis",lang)}>
+        <Toggle lbl="Badge" f="heroBadge"/>
+        <Toggle lbl="How It Works card" f="heroCard"/>
+        <Toggle lbl="Hero Trust Checks" f="heroChecks"/>
+        <Toggle lbl="Trust Bar" f="trustBar"/>
+        <Toggle lbl="Why Section" f="whySection"/>
+        <Toggle lbl="Pricing Section" f="pricingSection"/>
+        <Toggle lbl="Legal References" f="legalSection"/>
+        <Toggle lbl="FAQ Section" f="faqSection"/>
+        <Toggle lbl="Footer" f="footerSection"/>
+        <Toggle lbl="Lawyer Guide Panel" f="guidePanel"/>
+        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",padding:"5px 10px",marginTop:3}}>Why Cards</div>
+        {[0,1,2].map(i=><Toggle key={i} lbl={`⤷ Card ${i+1}`} f={`whyCard${i}`}/>)}
+        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",padding:"5px 10px",marginTop:3}}>Trust Stats</div>
+        {[0,1,2,3].map(i=><Toggle key={i} lbl={`⤷ Stat ${i+1}`} f={`trustStat${i}`}/>)}
+        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",padding:"5px 10px",marginTop:3}}>Pricing Features</div>
+        {[0,1,2,3].map(i=><Toggle key={i} lbl={`⤷ Feature ${i+1}`} f={`pricingF${i}`}/>)}
+        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",padding:"5px 10px",marginTop:3}}>Legal Refs</div>
+        {[0,1,2,3].map(i=><Toggle key={i} lbl={`⤷ Ref ${i+1}`} f={`legalRef${i}`}/>)}
+      </Section>
+    </div>
+    {/* ACTIONS */}
+    <div style={{padding:"11px 12px",borderTop:"1px solid rgba(255,255,255,0.1)",display:"flex",flexDirection:"column",gap:7}}>
+      <button onClick={onSave} style={{width:"100%",padding:"10px 0",background:saved?"#22c55e":cfg.gold,color:saved?"#fff":cfg.navy,border:"none",borderRadius:6,fontSize:13,fontWeight:700,cursor:"pointer",transition:"background 0.3s"}}>
+        {saved?t("edSaved",lang):t("edSave",lang)}
+      </button>
+      <button onClick={onExport} style={{width:"100%",padding:"8px 0",background:"rgba(255,255,255,0.08)",color:"#fff",border:"1px solid rgba(255,255,255,0.18)",borderRadius:6,fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
+        {t("edExport",lang)}
+      </button>
+      <button onClick={onReset} style={{width:"100%",padding:"7px 0",background:"transparent",color:"rgba(255,255,255,0.3)",border:"none",borderRadius:6,fontSize:11.5,cursor:"pointer"}}>
+        {t("edReset",lang)}
+      </button>
+      <div style={{fontSize:9.5,color:"rgba(255,255,255,0.2)",textAlign:"center",lineHeight:1.4}}>{"💾"} Save = this browser {"·"} {"📥"} Export = baked-in file</div>
+    </div>
+  </div>);
+}
+
+// ── MAIN APP ─────────────────────────────────────────
+function loadCfg(){
+  try{const s=localStorage.getItem('atp-cfg-v7');return s?{...DEF,...JSON.parse(s),vis:{...DEF.vis,...JSON.parse(s).vis}}:DEF;}catch(e){return DEF;}
+}
+function loadLang(){try{return localStorage.getItem('atp-lang')||"en";}catch(e){return "en";}}
+
+function App(){
+  const[page,setPage]=useState("landing");
+  const[em,sEm]=useState(false);
+  const[cfg,sCfg]=useState(loadCfg);
+  const[saved,setSaved]=useState(false);
+  const[track,sTrack]=useState("");
+  const[step,sStep]=useState(0);
+  const[ss,sSS]=useState("");
+  const[lang,setLangRaw]=useState(loadLang);
+
+  useEffect(()=>{document.body.style.fontFamily=cfg.fontFamily;document.body.style.fontSize=cfg.fontSize+"px";},[cfg.fontFamily,cfg.fontSize]);
+
+  const setLang=l=>{setLangRaw(l);try{localStorage.setItem('atp-lang',l);}catch(e){}};
+  const setCfg=upd=>{
+    sCfg(prev=>{
+      const next=typeof upd==="function"?upd(prev):upd;
+      try{localStorage.setItem('atp-cfg-v7',JSON.stringify(next));}catch(e){}
+      return next;
+    });
+  };
+  const nav=p=>{setPage(p);sStep(0);window.scrollTo(0,0);};
+  const onSave=()=>{
+    try{localStorage.setItem('atp-cfg-v7',JSON.stringify(cfg));setSaved(true);setTimeout(()=>setSaved(false),2500);}
+    catch(e){alert("Save failed — localStorage may be unavailable.");}
+  };
+  const onReset=()=>{
+    if(!window.confirm("Reset all edits to defaults?"))return;
+    localStorage.removeItem('atp-cfg-v7');sCfg(DEF);
+    document.body.style.fontFamily=DEF.fontFamily;document.body.style.fontSize=DEF.fontSize+"px";
+  };
+  const onExport=()=>{
+    try{
+      const sc=document.querySelector('script[type="text/babel"]');
+      if(!sc){alert("Export failed.");return;}
+      const cfgStr=JSON.stringify(cfg,null,2);
+      const newSrc=sc.textContent.replace(/const DEF=\{[\s\S]*?^\};/m,`const DEF=${cfgStr};`);
+      const html=`<!DOCTYPE html>\n<html lang="en">\n<head>\n${document.head.innerHTML}\n</head>\n<body><div id="root"></div>\n<script type="text/babel">\n${newSrc}\n<\/script>\n</body>\n</html>`;
+      const blob=new Blob([html],{type:"text/html"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='atp_will_generator_v7_custom.html';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    }catch(e){alert("Export error: "+e.message);}
+  };
+
+  return(
+    <LC.Provider value={{lang,setLang}}>
+      <EC.Provider value={{em,cfg,setCfg}}>
+        <div style={{fontFamily:cfg.fontFamily,background:"#f0f4fa",minHeight:"100vh",paddingRight:em?264:0}}>
+          <NavBar setPage={nav} em={em} setEm={sEm}/>
+          {page==="landing"&&<Landing setPage={nav}/>}
+          {page==="track"&&<TrackSel setPage={nav} setTrack={sTrack}/>}
+          {page==="nm-caveats"&&<NMCaveats setPage={nav}/>}
+          {page==="nm-form"&&<NMForm setPage={nav} step={step} setStep={sStep}/>}
+          {page==="m-caveats"&&<MCaveats setPage={nav}/>}
+          {page==="m-state"&&<MState setPage={nav} ss={ss} setSS={sSS}/>}
+          {page==="m-form"&&<MForm setPage={nav} step={step} setStep={sStep} ss={ss}/>}
+          <EditorPanel em={em} onSave={onSave} onReset={onReset} onExport={onExport} saved={saved}/>
+        </div>
+      </EC.Provider>
+    </LC.Provider>
+  );
+}
+ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+</body>
+</html>
